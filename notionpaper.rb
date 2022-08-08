@@ -44,7 +44,7 @@ markdown_content = ''
 
 tasks.each do |task|
   title = task['properties']['Name']['title'][0]['plain_text']
-  taskpaper_content << "☐ #{title}\n"
+  taskpaper_content << "- #{title}\n"
   taskpaper_content << "  #{NOTION_BASE_URL}#{task['id']}\n"
   markdown_content << "- [ ] [#{title}](#{NOTION_BASE_URL}#{task['id']})\n"
 end
