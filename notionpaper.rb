@@ -1,9 +1,18 @@
 require 'notion_ruby'
+require 'redcarpet'
 load 'config.rb'
 # Set these variables in config.rb:
 # NOTION_API_KEY
 # NOTION_BASE_URL
 # NOTION_DB_ID
+
+class CustomRender < Redcarpet::Render::HTML
+  def list_item(text, list_type)
+    super(text, list_type) unless list_type == :unordered
+    text.sub!('[ ]', '<input type="checkbox">')
+    %(<li style="list-style: none">#{text}</li>)
+  end
+end
 
 notion = NotionRuby.new({ access_token: NOTION_API_KEY })
 query = {
@@ -54,3 +63,5 @@ end
 
 File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
+File.write 'notion.html', Redcarpet::Markdown.new(CustomRender).render(markdown_content)
+
