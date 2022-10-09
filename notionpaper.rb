@@ -8,60 +8,61 @@ load 'config.rb'
 
 class CustomRender < Redcarpet::Render::HTML
   def list_item(text, list_type)
-    super(text, list_type) unless list_type == :unordered
+    notion_page_id = text.match(/ID:\[(.*)\]/)[1]
     text.sub!('[ ]', '<input type="checkbox">')
-    %(<li style="list-style: none">#{text}</li>)
+    %(<li style="list-style: none" onClick="location.href='/complete_task/#{notion_page_id}'">#{text}</li>)
   end
 end
 
-notion = NotionRuby.new({ access_token: NOTION_API_KEY })
-query = {
-  "filter": {
-    "and": [
+def create_notionpaper_files
+  notion = NotionRuby.new({ access_token: NOTION_API_KEY })
+  query = {
+    "filter": {
+      "and": [
+        {
+          "property": 'Status',
+          "select": {
+            "does_not_equal": 'Done'
+          }
+        },
+        {
+          "property": 'Status',
+          "select": {
+            "does_not_equal": 'Archive'
+          }
+        }
+      ]
+    },
+    "sorts": [
       {
         "property": 'Status',
-        "select": {
-          "does_not_equal": 'Done'
-        }
+        "direction": 'descending'
       },
       {
-        "property": 'Status',
-        "select": {
-          "does_not_equal": 'Archive'
-        }
+        "property": 'Created',
+        "direction": 'descending'
       }
-    ]
-  },
-  "sorts": [
-    {
-      "property": 'Status',
-      "direction": 'descending'
-    },
-    {
-      "property": 'Created',
-      "direction": 'descending'
-    }
-  ],
-  page_size: 100
-}
-results = notion.databases(NOTION_DB_ID).query(query)
+    ],
+    page_size: 100
+  }
+  results = notion.databases(NOTION_DB_ID).query(query)
 
-tasks = results['results']
+  tasks = results['results']
 
-File.write 'tasks.rb', tasks.to_s
+  File.write 'tasks.rb', tasks.to_s
 
-taskpaper_content = ''
-markdown_content = ''
+  taskpaper_content = ''
+  markdown_content = ''
 
-tasks.each do |task|
-  title = task['properties']['Name']['title'][0]['plain_text'].strip
-  url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
-  taskpaper_content << "- #{title}\n"
-  taskpaper_content << "  #{url}\n"
-  markdown_content << "- [ ] [#{title}](#{url})\n"
+  tasks.each do |task|
+    title = task['properties']['Name']['title'][0]['plain_text'].strip
+    url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
+    taskpaper_content << "- #{title}\n"
+    taskpaper_content << "  #{url}\n"
+    markdown_content << "- [ ] ID:[#{task['id'].tr("-", "")}] [#{title}](#{url})\n"
+  end
+
+  File.write 'notion.taskpaper', taskpaper_content
+  File.write 'notion.markdown', markdown_content
+  File.write 'notion.html', Redcarpet::Markdown.new(CustomRender).render(markdown_content)
 end
-
-File.write 'notion.taskpaper', taskpaper_content
-File.write 'notion.markdown', markdown_content
-File.write 'notion.html', Redcarpet::Markdown.new(CustomRender).render(markdown_content)
-
