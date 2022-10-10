@@ -14,6 +14,6 @@ end
 get '/complete_task/:id' do
   notion_page_id = params[:id].tr("-", "")
   notion = NotionRuby.new({ access_token: NOTION_API_KEY })
-  notion.pages(params[:id]).update({ properties: { Status: { select: { name: 'Done' } } } })
+  notion.pages(notion_page_id).update({ properties: { Status: { select: { name: 'Done' } } } })
   redirect '/'
 end
