@@ -38,10 +38,6 @@ def create_notionpaper_files
         "property": 'Status',
         "direction": 'descending'
       },
-      {
-        "property": 'Created',
-        "direction": 'descending'
-      }
     ],
     page_size: 100
   }
@@ -55,7 +51,13 @@ def create_notionpaper_files
   markdown_content = ''
 
   tasks.each do |task|
-    title = task['properties']['Name']['title'][0]['plain_text'].strip
+    #title_obj = task['properties']['Name']['title']
+    #break if title_obj == []
+    #title = title_obj[0]['plain_text'].strip
+    title = task.dig(:properties, :Name, :title, 0, :plain_text)
+    puts title
+    break unless title
+    title.strip!
     url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
     taskpaper_content << "- #{title}\n"
     taskpaper_content << "  #{url}\n"
