@@ -57,6 +57,7 @@ def create_notionpaper_files
   tasks.each do |task|
     # title = task['properties']['Name']['title'][0]['plain_text'].strip
     title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+    next if title.nil?
     title.strip!
     url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
     taskpaper_content << "- #{title}\n"
