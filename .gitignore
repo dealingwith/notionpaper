@@ -2,3 +2,5 @@ config.rb
 Gemfile.lock
 notion.markdown
 notion.taskpaper
+notion.html
+tasks.rb
