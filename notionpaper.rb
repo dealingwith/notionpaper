@@ -43,31 +43,39 @@ def create_notionpaper_files(config=nil)
     # present the properties to filter by
     # see https://developers.notion.com/reference/property-object
     puts "** Choose a property to filter by"
+    puts "N: No filter"
     properties = chosen_database['properties']
     properties.each_with_index { |prop, index| puts "#{index}: #{prop[1]['name']}" }
     print "Enter the number of the property you want to use: "
-    chosen_filter_property = gets.chomp.to_i
-    chosen_filter_property_name = properties.keys[chosen_filter_property]
+    chosen_filter = gets.chomp
+    unless chosen_filter == 'N'
+      chosen_filter_property = chosen_filter.to_i
+      chosen_filter_property_name = properties.keys[chosen_filter_property]
 
-    # present the options for the chosen property to filter by
-    # see https://developers.notion.com/reference/post-database-query-filter
-    puts "** Choose an option for the property to filter by"
-    chosen_filter_property_options = properties[chosen_filter_property_name]['select']['options']
-    chosen_filter_property_options.each_with_index { |option, index| puts "#{index}: #{option['name']}" }
-    print "Enter the number of the option you want to use: "
-    chosen_filter_option = gets.chomp.to_i
-    chosen_filter_option_name = chosen_filter_property_options[chosen_filter_option]['name']
+      # present the options for the chosen property to filter by
+      # see https://developers.notion.com/reference/post-database-query-filter
+      puts "** Choose an option for the property to filter by"
+      chosen_filter_property_options = properties[chosen_filter_property_name]['select']['options']
+      chosen_filter_property_options.each_with_index { |option, index| puts "#{index}: #{option['name']}" }
+      print "Enter the number of the option you want to use: "
+      chosen_filter_option = gets.chomp.to_i
+      chosen_filter_option_name = chosen_filter_property_options[chosen_filter_option]['name']
+    end
   end
 
-  query = {
-    "filter": {
-      "property": chosen_filter_property_name,
-      "select": {
-        "equals": chosen_filter_option_name
-      }
-    },
-    page_size: 100
-  }
+  unless chosen_filter_property_name.nil? && chosen_filter_option_name.nil?
+    query = {
+      "filter": {
+        "property": chosen_filter_property_name,
+        "select": {
+          "equals": chosen_filter_option_name
+        }
+      },
+      page_size: 100
+    }
+  else
+    query = { page_size: 100 }
+  end
 
   results = notion.databases(db_id).query(query)
   tasks = results['results']
