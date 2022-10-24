@@ -67,6 +67,9 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does:
 
 ## Dependencies
 
+* The Notion API
+  * [docs](https://developers.notion.com/reference/intro)
+  * [developers.notion.com](https://developers.notion.com/)
 * [notion-ruby](https://github.com/decoch/notion-ruby)
 * [Sinatra](https://sinatrarb.com/)
 * [redcarpet](https://github.com/vmg/redcarpet)
