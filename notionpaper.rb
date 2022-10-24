@@ -1,10 +1,6 @@
 require 'notion_ruby'
 require 'redcarpet'
-load 'config.rb'
-# Set these variables in config.rb:
-# NOTION_API_KEY
-# NOTION_BASE_URL
-# NOTION_DB_ID
+require 'awesome_print'
 
 class CustomRender < Redcarpet::Render::HTML
   def list_item(text, list_type)
@@ -14,48 +10,74 @@ class CustomRender < Redcarpet::Render::HTML
   end
 end
 
-def create_notionpaper_files
+def create_notionpaper_files(config=nil)
   notion = NotionRuby.new({ access_token: NOTION_API_KEY })
+
+  if (config)
+    # load database and filter configs from passed-in values
+    db_id, chosen_filter_property_name, chosen_filter_option_name = config['db_id'], config['chosen_filter_property_name'], config['chosen_filter_option_name']
+  else
+    # prompt user for all options
+    # get all databases this API key has access to
+    databases = notion.databases
+    databases_results = databases['results']
+    File.write 'databases_to_json.json', databases # for debugging
+    databases_list = []
+    databases_results.each_with_index { |db, index|
+      id = db['id']
+      title = db['title'][0]['plain_text']
+      databases_list << { id: id, title: title }
+    }
+
+    # present user with list of databases to choose from
+    # see https://developers.notion.com/reference/database
+    puts "** Databases"
+    databases_list.each_with_index { |db, index| puts "#{index}: #{db[:title]}" }
+    print "Enter the number of the database you want to use: "
+    db_index = gets.chomp.to_i
+    # get the database ID
+    db_id = databases_list[db_index][:id]
+    # get the database's info
+    chosen_database = databases_results[db_index]
+
+    # present the properties to filter by
+    # see https://developers.notion.com/reference/property-object
+    puts "** Choose a property to filter by"
+    properties = chosen_database['properties']
+    properties.each_with_index { |prop, index| puts "#{index}: #{prop[1]['name']}" }
+    print "Enter the number of the property you want to use: "
+    chosen_filter_property = gets.chomp.to_i
+    chosen_filter_property_name = properties.keys[chosen_filter_property]
+
+    # present the options for the chosen property to filter by
+    # see https://developers.notion.com/reference/post-database-query-filter
+    puts "** Choose an option for the property to filter by"
+    chosen_filter_property_options = properties[chosen_filter_property_name]['select']['options']
+    chosen_filter_property_options.each_with_index { |option, index| puts "#{index}: #{option['name']}" }
+    print "Enter the number of the option you want to use: "
+    chosen_filter_option = gets.chomp.to_i
+    chosen_filter_option_name = chosen_filter_property_options[chosen_filter_option]['name']
+  end
+
   query = {
     "filter": {
-      "and": [
-        {
-          "property": 'Status',
-          "select": {
-            "does_not_equal": 'Done'
-          }
-        },
-        {
-          "property": 'Status',
-          "select": {
-            "does_not_equal": 'Archive'
-          }
-        }
-      ]
-    },
-    "sorts": [
-      {
-        "property": 'Status',
-        "direction": 'descending'
-      },
-      {
-        "property": 'Created',
-        "direction": 'descending'
+      "property": chosen_filter_property_name,
+      "select": {
+        "equals": chosen_filter_option_name
       }
-    ],
+    },
     page_size: 100
   }
-  results = notion.databases(NOTION_DB_ID).query(query)
 
+  results = notion.databases(db_id).query(query)
   tasks = results['results']
 
-  File.write 'tasks.rb', tasks.to_s
+  File.write 'tasks.rb', tasks.to_s # for debugging
 
   taskpaper_content = ''
   markdown_content = ''
 
   tasks.each do |task|
-    # title = task['properties']['Name']['title'][0]['plain_text'].strip
     title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
     next if title.nil?
     title.strip!

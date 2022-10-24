@@ -1,13 +1,13 @@
+load 'config.rb'
 require 'sinatra'
 require './notionpaper'
 
-# TODO: figure out how to get Sinatra to hot-reload the app when the files change
 get '/' do
   File.read('notion.html')
 end
 
 get '/refresh' do
-  create_notionpaper_files()
+  create_notionpaper_files(CONFIG)
   redirect '/'
 end
 
