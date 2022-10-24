@@ -63,7 +63,7 @@ def create_notionpaper_files(config=nil)
     end
   end
 
-  unless chosen_filter_property_name.nil? && chosen_filter_option_name.nil?
+  unless chosen_filter_property_name.nil? || chosen_filter_option_name.nil?
     query = {
       "filter": {
         "property": chosen_filter_property_name,
