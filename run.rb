@@ -11,4 +11,9 @@
 load 'config.rb'
 require './notionpaper'
 
-create_notionpaper_files(CONFIG)
+create_notionpaper_files()
+
+# testing our refactor into a NotionPaper class
+# notionpaper = NotionPaper.new()
+# databases_list = notionpaper.get_notion_databases()
+# puts databases_list
