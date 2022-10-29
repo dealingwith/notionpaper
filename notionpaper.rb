@@ -11,6 +11,8 @@ class CustomRender < Redcarpet::Render::HTML
 end
 
 class NotionPaper
+  attr_reader :databases_results
+
   def initialize()
     @notion = NotionRuby.new({ access_token: NOTION_API_KEY })
   end
