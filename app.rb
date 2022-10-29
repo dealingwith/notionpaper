@@ -8,7 +8,7 @@ get '/' do
   File.read('notion.html')
 end
 
-get '/refresh' do
+get '/refresh/?' do
   create_notionpaper_files(CONFIG)
   redirect '/'
 end
@@ -20,13 +20,13 @@ get '/complete_task/:id' do
   redirect '/'
 end
 
-get '/config_database' do
+get '/config_database/?' do
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
   erb :config_database, locals: { databases_list: databases_list }
 end
 
-get '/config_property' do
+get '/config_property/?' do
   database_id = params[:db_id]
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
