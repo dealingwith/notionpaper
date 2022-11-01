@@ -1,0 +1,9 @@
+<ul>
+  <% filter_options.each do |filter_option| %>
+    <li>
+      <a href="/refresh/?filter_option=<%= filter_option['name'] %>">
+        <%= filter_option['name'] %>
+      </a>
+    </li>
+  <% end %>
+</ul>

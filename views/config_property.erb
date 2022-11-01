@@ -1,0 +1,9 @@
+<ul>
+  <% properties.each do |prop| %>
+    <li>
+      <a href="/config_filter?property_name=<%= prop[1]['name'] %>">
+        <%= prop[1]['name'] %>
+      </a>
+    </li>
+  <% end %>
+</ul>
