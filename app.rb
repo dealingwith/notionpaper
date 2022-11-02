@@ -5,21 +5,20 @@ require './notionpaper'
 enable :sessions
 
 get '/' do
-  File.read('notion.html')
-end
-
-get '/refresh/?' do
-  if params[:filter_option].nil? && session[:filter_option].nil?
-    create_notionpaper_files(CONFIG)
+  if (params[:filter_option].nil? && session[:filter_option].nil?)
+    return "No config file found" unless defined?(CONFIG)
+    config = CONFIG
   else
-    session[:filter_option] = params[:filter_option] unless params[:filter_option].nil?
-    create_notionpaper_files({
+    session[:filter_option] = params[:filter_option]
+    config = {
       'db_id' => session[:db_id],
       'chosen_filter_property_name' => session[:property_name],
       'chosen_filter_option_name' => session[:filter_option]
-    })
+    }
   end
-  redirect '/'
+  tasks = create_notionpaper_files(config)
+  return "No tasks found" if tasks.nil?
+  erb :index, locals: { tasks: tasks }
 end
 
 get '/complete_task/:id' do
