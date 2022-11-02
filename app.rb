@@ -6,7 +6,7 @@ enable :sessions
 
 get '/' do
   if (params[:filter_option].nil? && session[:filter_option].nil?)
-    return "No config file found" unless defined?(CONFIG)
+    return '<a href="/config_database">Configure</a>' unless defined?(CONFIG)
     config = CONFIG
   else
     session[:filter_option] = params[:filter_option]
