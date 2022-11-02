@@ -26,7 +26,7 @@ class NotionPaper
 
 end
 
-def create_notionpaper_files(config=nil)
+def get_notion_tasks(config=nil)
   notionpaper = NotionPaper.new()
 
   if (config)

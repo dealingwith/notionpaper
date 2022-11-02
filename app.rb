@@ -16,7 +16,7 @@ get '/' do
       'chosen_filter_option_name' => session[:filter_option]
     }
   end
-  tasks = create_notionpaper_files(config)
+  tasks = get_notion_tasks(config)
   erb :index, locals: { tasks: tasks }
 end
 

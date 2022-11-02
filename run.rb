@@ -73,7 +73,7 @@ else
   config = cli_prompt_for_config_values()
 end
 
-tasks = create_notionpaper_files(config)
+tasks = get_notion_tasks(config)
 
 taskpaper_content = ''
 markdown_content = ''
