@@ -17,7 +17,6 @@ get '/' do
     }
   end
   tasks = create_notionpaper_files(config)
-  return "No tasks found" if tasks.nil?
   erb :index, locals: { tasks: tasks }
 end
 
