@@ -31,7 +31,9 @@ def get_notion_tasks(config=nil)
 
   if (config)
     # load database and filter configs from passed-in values
-    db_id, chosen_filter_property_name, chosen_filter_option_name = config['db_id'], config['chosen_filter_property_name'], config['chosen_filter_option_name']
+    db_id = config['db_id']
+    chosen_filter_property_name = config['chosen_filter_property_name']
+    chosen_filter_option_name = config['chosen_filter_option_name']
   else
     return
   end
