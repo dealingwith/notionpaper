@@ -1,0 +1,18 @@
+<% if tasks %>
+  <div class="tasks">
+    <ul>
+      <% tasks.each do |task| %>
+        <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
+        <% next if title.nil? %>
+        <% title.strip! %>
+        <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}" %>
+        <li style="list-style: none">
+          <a href="/ajax_complete_task/<%= task['id'].tr("-", "") %>" data-trimmings-replace=".tasks, .tasks">☑️</a>
+          <input type="checkbox" onClick="location.href='/complete_task/<%= task['id'].tr("-", "") %>'">
+          <a href="<%= url %>" target="_blank"><%= title %></a>
+          <span style="font-size: .8rem">(status: <%= task.dig('properties', 'Status', 'select', 'name') %>)</span>
+        </li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
