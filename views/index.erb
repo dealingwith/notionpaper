@@ -6,6 +6,8 @@
 <p>filter_property: <%= session[:filter_property] %></p>
 <p>filter_option: <%= session[:filter_option] %></p>
 
-<%= erb '_tasks'.to_sym, :locals => {:tasks => tasks} %>
+<div class="tasks">
+  <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks} %>
+</div>
 
 <p><a href="/config_database">Configure</a></p>

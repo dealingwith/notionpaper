@@ -1,4 +1,26 @@
 <head>
   <title>Scaper</title>
-  <script type="text/javascript" src="trimmings.js"></script>
+  <style>
+    * {
+      font-family: sans-serif;
+    }
+  </style>
+  <script type="text/javascript">
+
+    function completeTask(task_id) {
+      fetch('/ajax_complete_task/' + task_id, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/html'
+        }
+      }).then(function(response) {
+        // response is a promist
+        return response.text();
+      }).then(function(my_text) {
+        // text() gave us the text response, which in our case is the HTML to inject
+        document.querySelector(".tasks").innerHTML = my_text;
+      });
+    }
+
+  </script>
 </head>
