@@ -8,7 +8,7 @@
       <li style="list-style: none">
         <input type="checkbox" onClick="completeTask('<%= task['id'].tr("-", "") %>')">
         <a href="<%= url %>" target="_blank"><%= title %></a>
-        <span style="color: #ccc; font-size: 0.9rem">#[[<%= task.dig('properties', 'Status', 'select', 'name') %>]]</span>
+        <span style="color: #ccc; font-size: 0.9rem">(<%= task.dig('properties', 'Status', 'select', 'name') %>)</span>
       </li>
     <% end %>
   </ul>

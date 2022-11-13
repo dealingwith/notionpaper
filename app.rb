@@ -50,7 +50,7 @@ get '/complete_task/:id' do
   # erb :complete_task, locals: { notion_update_payload: notion_update_payload }
 end
 
-get '/ajax_complete_task/:id' do
+get '/api/complete_task/:id' do
   notion_page_id = params[:id].tr("-", "")
   notion = NotionRuby.new({ access_token: NOTION_API_KEY })
   notion_update_payload = {
