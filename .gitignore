@@ -7,3 +7,4 @@ tasks.rb
 databases.json
 databases.rb
 databases_to_json.json
+.DS_Store

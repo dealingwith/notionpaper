@@ -7,8 +7,7 @@ enable :sessions
 get '/' do
   return params[:error] if params[:error]
   # if filter_option was not passed in, and does not exist in session, try grabbing it from the config
-  if (params[:filter_option].nil? && session[:filter_option].nil?)
-    return '<a href="/config_database">Configure</a>' unless defined?(CONFIG)
+  if (defined?(CONFIG) && params[:filter_option].nil? && session[:filter_option].nil?)
     show_message = "Using values from config.rb"
     session[:db_id] = CONFIG['db_id']
     session[:filter_property] = CONFIG['chosen_filter_property_name']
@@ -49,6 +48,24 @@ get '/complete_task/:id' do
   redirect '/'
   # leaving this in for future debugging:
   # erb :complete_task, locals: { notion_update_payload: notion_update_payload }
+end
+
+get '/api/complete_task/:id' do
+  notion_page_id = params[:id].tr("-", "")
+  notion = NotionRuby.new({ access_token: NOTION_API_KEY })
+  notion_update_payload = {
+    properties: {
+      "#{session[:filter_property]}": { select: { name: 'Done' } }
+    }
+  }
+  notion.pages(notion_page_id).update(notion_update_payload)
+  config = {
+    'db_id' => session[:db_id],
+    'chosen_filter_property_name' => session[:filter_property],
+    'chosen_filter_option_name' => session[:filter_option]
+  }
+  tasks = get_notion_tasks(config)
+  erb '_tasks'.to_sym, locals: { tasks: tasks }
 end
 
 get '/config_database/?' do

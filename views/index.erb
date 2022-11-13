@@ -1,23 +1,13 @@
+<%= erb '_head'.to_sym %>
+
 <p>Message: <%= show_message %></p>
 
 <p>DB ID: <%= session[:db_id] %></p>
 <p>filter_property: <%= session[:filter_property] %></p>
 <p>filter_option: <%= session[:filter_option] %></p>
 
-<% if tasks %>
-  <ul>
-    <% tasks.each do |task| %>
-      <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
-      <% next if title.nil? %>
-      <% title.strip! %>
-      <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}" %>
-      <li style="list-style: none">
-        <input type="checkbox" onClick="location.href='/complete_task/<%= task['id'].tr("-", "") %>'">
-        <a href="<%= url %>" target="_blank"><%= title %></a>
-        <span style="font-size: .8rem">(status: <%= task.dig('properties', 'Status', 'select', 'name') %>)</span>
-      </li>
-    <% end %>
-  </ul>
-<% end %>
+<div class="tasks">
+  <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks} %>
+</div>
 
 <p><a href="/config_database">Configure</a></p>
