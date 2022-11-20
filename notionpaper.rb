@@ -34,20 +34,46 @@ def get_notion_tasks(config=nil)
     db_id = config['db_id']
     chosen_filter_property_name = config['chosen_filter_property_name']
     chosen_filter_option_name = config['chosen_filter_option_name']
+    chosen_multifilter_option_names = config['chosen_multifilter_option_names']
   else
     return
   end
 
-  unless chosen_filter_property_name.nil? || chosen_filter_option_name.nil?
-    query = {
-      "filter": {
-        "property": chosen_filter_property_name,
-        "select": {
-          "equals": chosen_filter_option_name
-        }
-      },
-      page_size: 100
-    }
+  if !chosen_filter_property_name.nil?
+    if !chosen_multifilter_option_names.nil?
+      query = {
+        "filter": {
+          "or": [
+            {
+              "property": chosen_filter_property_name,
+              "select": {
+                "equals": chosen_multifilter_option_names[0]
+              }
+            },
+            {
+              "property": chosen_filter_property_name,
+              "select": {
+                "equals": chosen_multifilter_option_names[1]
+              }
+            }
+          ]
+        },
+        page_size: 100
+      }
+      p query
+    elsif !chosen_filter_option_name.nil?
+      query = {
+        "filter": {
+          "property": chosen_filter_property_name,
+          "select": {
+            "equals": chosen_filter_option_name
+          }
+        },
+        page_size: 100
+      }
+    else
+      query = { page_size: 100 }
+    end
   else
     query = { page_size: 100 }
   end
