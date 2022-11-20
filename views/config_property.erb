@@ -1,8 +1,10 @@
+<p>Choose a property to filter by:</p>
+<p>(Only 'status' and 'select' properties are supported.)</p>
 <ul>
   <% properties.each do |prop| %>
     <li>
-      <a href="/config_filter?filter_property=<%= prop[1]['name'] %>">
-        <%= prop[1]['name'] %>
+      <a href="/config_filter?filter_property=<%= prop[0] %>&filter_type=<%= prop[1] %>">
+        <%= prop[0] %>
       </a>
     </li>
   <% end %>
