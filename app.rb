@@ -79,14 +79,22 @@ get '/config_property/?' do
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == db_id }
-  erb :config_property, locals: { properties: chosen_database['properties'] }
+  puts chosen_database['properties']
+  available_properties = []
+  chosen_database['properties'].each do |property|
+    if (property[1]['type'] == 'select' || property[1]['type'] == 'status')
+      available_properties << [property[0], property[1]['type']]
+    end
+  end
+  erb :config_property, locals: { properties: available_properties }
 end
 
 get '/config_filter/?' do
   session[:filter_property] = filter_property = params[:filter_property]
+  session[:filter_type] = filter_type = params[:filter_type]
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == session[:db_id] }
-  filter_options = chosen_database['properties'][filter_property]['select']['options']
+  filter_options = chosen_database['properties'][filter_property][filter_type]['options']
   erb :config_filter, locals: { filter_options: filter_options }
 end
