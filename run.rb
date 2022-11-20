@@ -93,8 +93,4 @@ File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
 html_content = Redcarpet::Markdown.new(CustomRender).render(markdown_content)
 File.write 'notion.html', html_content
-
-PDFKit.configure do |config|
-  config.wkhtmltopdf = '/usr/local/bin/wkhtmltopdf'
-end
 PDFKit.new(html_content).to_file("notion.pdf")
