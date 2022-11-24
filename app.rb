@@ -34,7 +34,7 @@ get '/' do
     tasks = []
     show_message = "Session is empty: #{session.inspect}"
   end
-  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
+  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options_data: session[:filter_options_data] }
 end
 
 get '/complete_task/:id' do
