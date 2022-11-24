@@ -61,6 +61,7 @@ def cli_prompt_for_config_values()
   return {
     'db_id' => db_id,
     'chosen_filter_property_name' => chosen_filter_property_name,
+    'filter_type' => 'select',
     'filter_options' => filter_options
   }
 end
