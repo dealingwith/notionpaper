@@ -5,8 +5,9 @@
       <label><input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %></label>
     </li>
   <% end %>
-  <button id="multi-filter">Submit</a>
 </ul>
+<button id="multi-filter">Submit</a>
+
 <script>
   document.getElementById('multi-filter').addEventListener('click', function(e) {
     e.preventDefault();

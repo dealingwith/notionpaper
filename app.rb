@@ -11,6 +11,7 @@ get '/' do
     show_message = "Using values from config.rb"
     session[:db_id] = CONFIG['db_id']
     session[:filter_property] = CONFIG['chosen_filter_property_name']
+    params[:filter_type] = CONFIG['filter_type']
     session[:filter_options] = CONFIG['filter_options']
   # else if filter_options was passed in, use that
   elsif (params[:filter_options])
@@ -20,10 +21,11 @@ get '/' do
     show_message = "Using values from session"
   end
   # if we have everything we need to query...
-  if (session[:db_id] && session[:filter_property] && session[:filter_options])
+  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     config = {
       'db_id' => session[:db_id],
       'chosen_filter_property_name' => session[:filter_property],
+      'filter_type' => session[:filter_type],
       'filter_options' => session[:filter_options]
     }
     tasks = get_notion_tasks(config)
@@ -81,7 +83,8 @@ get '/config_property/?' do
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == db_id }
   available_properties = []
   chosen_database['properties'].each do |property|
-    if (property[1]['type'] == 'select' || property[1]['type'] == 'status')
+    # 11/24/2022: having issues querying for 'status', skipping for now
+    if (property[1]['type'] == 'select') # || property[1]['type'] == 'status' || property[1]['type'] == 'checkbox')
       available_properties << [property[0], property[1]['type']]
     end
   end
