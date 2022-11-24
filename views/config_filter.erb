@@ -1,9 +1,24 @@
+<p>Click on a single filter, or choose multiple filters:</p>
 <ul>
   <% filter_options.each do |filter_option| %>
     <li>
       <a href="/?filter_option=<%= filter_option['name'] %>">
-        <%= filter_option['name'] %>
+        <input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %>
       </a>
     </li>
   <% end %>
+  <a href="" id="multi-filter">Use multiple filters</a>
 </ul>
+<script>
+  document.getElementById('multi-filter').addEventListener('click', function(e) {
+    e.preventDefault();
+    var checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    var checked = [];
+    for (var i = 0; i < checkboxes.length; i++) {
+      if (checkboxes[i].checked) {
+        checked.push(checkboxes[i].name);
+      }
+    }
+    window.location.href = '/?chosen_multifilter_option_names=' + checked.join(',');
+  });
+</script>

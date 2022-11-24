@@ -41,26 +41,19 @@ def get_notion_tasks(config=nil)
 
   if !chosen_filter_property_name.nil?
     if !chosen_multifilter_option_names.nil?
+      subquery = []
+      chosen_multifilter_option_names.split(',').each { |option|
+        subquery << {
+          property: chosen_filter_property_name,
+          select: { equals: option }
+        }
+      }
       query = {
         "filter": {
-          "or": [
-            {
-              "property": chosen_filter_property_name,
-              "select": {
-                "equals": chosen_multifilter_option_names[0]
-              }
-            },
-            {
-              "property": chosen_filter_property_name,
-              "select": {
-                "equals": chosen_multifilter_option_names[1]
-              }
-            }
-          ]
+          "or": subquery
         },
         page_size: 100
       }
-      p query
     elsif !chosen_filter_option_name.nil?
       query = {
         "filter": {
@@ -77,11 +70,16 @@ def get_notion_tasks(config=nil)
   else
     query = { page_size: 100 }
   end
-
+  query[:sorts] = [
+    {
+        "property": chosen_filter_property_name,
+        "direction": "descending"
+    }
+  ]
   results = notionpaper.run_notion_query(db_id, query)
   tasks = results['results']
 
-  File.write 'tasks.rb', tasks.to_s # for debugging
+  # File.write 'tasks.rb', tasks.to_s # for debugging
 
   return tasks
 end

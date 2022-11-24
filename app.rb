@@ -16,23 +16,29 @@ get '/' do
   elsif (params[:filter_option])
     session[:filter_option] = params[:filter_option]
   # else use all values from session
+  elsif (params[:chosen_multifilter_option_names])
+    session[:chosen_multifilter_option_names] = params[:chosen_multifilter_option_names]
   else
     show_message = "Using values from session"
   end
   # if we have everything we need to query...
-  if (session[:db_id] || session[:filter_property] || session[:filter_option])
+  if (session[:db_id] && session[:filter_property] && (session[:filter_option] || session[:chosen_multifilter_option_names]))
     config = {
       'db_id' => session[:db_id],
       'chosen_filter_property_name' => session[:filter_property],
-      'chosen_filter_option_name' => session[:filter_option]
     }
+    if (session[:filter_option])
+      config['chosen_filter_option_name'] = session[:filter_option]
+    elsif (session[:chosen_multifilter_option_names])
+      config['chosen_multifilter_option_names'] = session[:chosen_multifilter_option_names]
+    end
     tasks = get_notion_tasks(config)
   # else, things have gone wrong
   else
     tasks = []
     show_message = "Session is empty: #{session.inspect}"
   end
-  erb :index, locals: { tasks: tasks, show_message: show_message }
+  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
 end
 
 get '/complete_task/:id' do
@@ -62,10 +68,11 @@ get '/api/complete_task/:id' do
   config = {
     'db_id' => session[:db_id],
     'chosen_filter_property_name' => session[:filter_property],
-    'chosen_filter_option_name' => session[:filter_option]
+    'chosen_filter_option_name' => session[:filter_option],
+    'chosen_multifilter_option_names' => session[:chosen_multifilter_option_names]
   }
   tasks = get_notion_tasks(config)
-  erb '_tasks'.to_sym, locals: { tasks: tasks }
+  erb '_tasks'.to_sym, locals: { tasks: tasks, filter_options: session[:filter_options] }, layout: false
 end
 
 get '/config_database/?' do
@@ -79,7 +86,6 @@ get '/config_property/?' do
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == db_id }
-  puts chosen_database['properties']
   available_properties = []
   chosen_database['properties'].each do |property|
     if (property[1]['type'] == 'select' || property[1]['type'] == 'status')
@@ -96,5 +102,6 @@ get '/config_filter/?' do
   databases_list = notionpaper.get_notion_databases()
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == session[:db_id] }
   filter_options = chosen_database['properties'][filter_property][filter_type]['options']
+  session[:filter_options] = filter_options
   erb :config_filter, locals: { filter_options: filter_options }
 end

@@ -7,7 +7,7 @@
 <p>filter_option: <%= session[:filter_option] %></p>
 
 <div class="tasks">
-  <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks} %>
+  <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks, filter_options: filter_options } %>
 </div>
 
 <p><a href="/config_database">Configure</a></p>
