@@ -15,7 +15,7 @@ NOTION_BASE_URL = '[YOUR NOTION BASE URL]' # for example https://www.notion.so/u
 CONFIG = {
   'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
   'chosen_filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. 'Status'
-  'chosen_filter_option_name' => '[PUT VALUE TO FILTER BY HERE]' # e.g. 'Todo'
+  'filter_options' => ['In Progress', 'Priority'] # <-- e.g.
 }
 ```
 
@@ -60,7 +60,7 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does:
   "filter": {
     "property": "chosen_filter_property_name",
     "select": {
-      "equals": "chosen_filter_option_name"
+      "equals": "filter_option"
     }
   }
 }

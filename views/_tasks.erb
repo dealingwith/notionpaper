@@ -9,8 +9,8 @@
         <input type="checkbox" onClick="completeTask('<%= task['id'].tr("-", "") %>')">
         <a href="<%= url %>" target="_blank"><%= title %></a>
         <% filter_name = task.dig('properties', 'Status', 'select', 'name') %>
-        <% filter = filter_options.detect { |o| o['name'] == filter_name } %>
-        <span style="color: <%= filter['color'] %>">[<%= filter_name %>]</span>
+        <% filter = filter_options_data.detect { |o| o['name'] == filter_name } %>
+        <span style="color: <%= filter['color'] %>"><%= filter_name %></span>
       </li>
     <% end %>
   </ul>

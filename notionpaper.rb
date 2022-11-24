@@ -33,16 +33,15 @@ def get_notion_tasks(config=nil)
     # load database and filter configs from passed-in values
     db_id = config['db_id']
     chosen_filter_property_name = config['chosen_filter_property_name']
-    chosen_filter_option_name = config['chosen_filter_option_name']
-    chosen_multifilter_option_names = config['chosen_multifilter_option_names']
+    filter_options = config['filter_options']
   else
     return
   end
 
   if !chosen_filter_property_name.nil?
-    if !chosen_multifilter_option_names.nil?
+    if !filter_options.nil?
       subquery = []
-      chosen_multifilter_option_names.each { |option|
+      filter_options.each { |option|
         subquery << {
           property: chosen_filter_property_name,
           select: { equals: option }
@@ -51,16 +50,6 @@ def get_notion_tasks(config=nil)
       query = {
         "filter": {
           "or": subquery
-        },
-        page_size: 100
-      }
-    elsif !chosen_filter_option_name.nil?
-      query = {
-        "filter": {
-          "property": chosen_filter_property_name,
-          "select": {
-            "equals": chosen_filter_option_name
-          }
         },
         page_size: 100
       }

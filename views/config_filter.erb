@@ -1,6 +1,6 @@
 <p>Choose filters:</p>
 <ul>
-  <% filter_options.each do |filter_option| %>
+  <% filter_options_data.each do |filter_option| %>
     <li>
       <input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %>
     </li>
@@ -17,6 +17,6 @@
         checked.push(checkboxes[i].name);
       }
     }
-    window.location.href = '/?chosen_multifilter_option_names=' + checked.join(',');
+    window.location.href = '/?filter_options=' + checked.join(',');
   });
 </script>
