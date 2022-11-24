@@ -17,7 +17,7 @@ get '/' do
     session[:filter_option] = params[:filter_option]
   # else use all values from session
   elsif (params[:chosen_multifilter_option_names])
-    session[:chosen_multifilter_option_names] = params[:chosen_multifilter_option_names]
+    session[:chosen_multifilter_option_names] = params[:chosen_multifilter_option_names].split(',')
   else
     show_message = "Using values from session"
   end

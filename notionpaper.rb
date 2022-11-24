@@ -42,7 +42,7 @@ def get_notion_tasks(config=nil)
   if !chosen_filter_property_name.nil?
     if !chosen_multifilter_option_names.nil?
       subquery = []
-      chosen_multifilter_option_names.split(',').each { |option|
+      chosen_multifilter_option_names.each { |option|
         subquery << {
           property: chosen_filter_property_name,
           select: { equals: option }
