@@ -1,13 +1,11 @@
-<p>Click on a single filter, or choose multiple filters:</p>
+<p>Choose filters:</p>
 <ul>
   <% filter_options.each do |filter_option| %>
     <li>
-      <a href="/?filter_option=<%= filter_option['name'] %>">
-        <input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %>
-      </a>
+      <input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %>
     </li>
   <% end %>
-  <a href="" id="multi-filter">Use multiple filters</a>
+  <button id="multi-filter">Submit</a>
 </ul>
 <script>
   document.getElementById('multi-filter').addEventListener('click', function(e) {
