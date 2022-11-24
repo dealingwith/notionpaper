@@ -2,7 +2,7 @@
 <ul>
   <% filter_options_data.each do |filter_option| %>
     <li>
-      <input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %>
+      <label><input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %></label>
     </li>
   <% end %>
   <button id="multi-filter">Submit</a>
