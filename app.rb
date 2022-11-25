@@ -6,19 +6,19 @@ enable :sessions
 
 get '/' do
   return params[:error] if params[:error]
-  # if filter_option was not passed in, and does not exist in session, try grabbing it from the config
-  if (defined?(CONFIG) && session[:filter_options].nil?)
-    show_message = "Using values from config.rb"
-    session[:db_id] = CONFIG['db_id']
-    session[:filter_property] = CONFIG['chosen_filter_property_name']
-    params[:filter_type] = CONFIG['filter_type']
-    session[:filter_options] = CONFIG['filter_options']
-  # else if filter_options was passed in, use that
-  elsif (params[:filter_options])
+  # if filter_options was passed in, use that
+  if (params[:filter_options])
     session[:filter_options] = params[:filter_options].split(',')
-  # else use all values from session
-  else
+  # if everything is stored in session, we'll use that
+  elsif (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
+  # try grabbing data out of the config
+  elsif (defined?(CONFIG))
+    show_message = "Using values from session OR config.rb"
+    session[:db_id] = session[:db_id] || CONFIG['db_id']
+    session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
+    session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
+    session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
   end
   # if we have everything we need to query...
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
