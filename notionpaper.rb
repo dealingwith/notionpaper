@@ -1,23 +1,42 @@
-require 'notion_ruby'
+# require 'notion_ruby'
+require 'notion-ruby-client'
 
 class NotionPaper
   attr_reader :databases_results
 
   def initialize()
-    @notion = NotionRuby.new({ access_token: NOTION_API_KEY })
+    # @notion = NotionRuby.new({ access_token: NOTION_API_KEY })
+    Notion.configure do |config|
+      config.token = NOTION_API_KEY
+    end
+    @notion = Notion::Client.new
   end
+
+  public
 
   def get_notion_databases()
     # get all databases this API key has access to
-    databases = @notion.databases
-    @databases_results = databases['results']
-    File.write 'databases_to_json.json', databases # for debugging
     databases_list = []
-    @databases_results.each_with_index { |db, index|
-      id = db['id']
-      title = db['title'][0]['plain_text']
-      databases_list << { id: id, title: title }
-    }
+    query = {"filter": {"value": "database", "property": "object"}}
+    @notion.search(query) do |db|
+      db[:results].each do |database|
+        if database[:title]&.first&.[](:plain_text)
+          # ap database
+          db_obj = {
+            :id => database[:id],
+            :title => database[:title]&.first&.[](:plain_text),
+            :filter_properties => []
+          }
+          database[:properties].each do |prop|
+            type = prop[1][:type]
+            if type == 'select' || type == 'status' || type == 'checkbox'
+              db_obj[:filter_properties].push [prop[1][:name], type]
+            end
+          end
+          databases_list.push db_obj
+        end
+      end
+    end
     return databases_list
   end
 
