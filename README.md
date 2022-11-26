@@ -71,6 +71,7 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does:
 * The Notion API
   * [docs](https://developers.notion.com/reference/intro)
   * [developers.notion.com](https://developers.notion.com/)
-* [notion-ruby](https://github.com/decoch/notion-ruby)
+* [notion-ruby-client](https://github.com/orbit-love/notion-ruby-client)
 * [Sinatra](https://sinatrarb.com/)
+* [Moneta](https://github.com/moneta-rb/moneta)
 * [redcarpet](https://github.com/vmg/redcarpet)
