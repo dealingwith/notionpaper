@@ -1,4 +1,5 @@
 load 'config.rb'
+require 'awesome_print'
 require 'sinatra'
 require './notionpaper'
 
@@ -72,23 +73,20 @@ end
 
 get '/config_database/?' do
   notionpaper = NotionPaper.new()
-  databases_list = notionpaper.get_notion_databases()
-  erb :config_database, locals: { databases_list: databases_list }
+  session[:databases_list], session[:filter_options] = *notionpaper.get_notion_databases()
+  ap session[:databases_list]
+  ap session[:filter_options]
+  erb :config_database, locals: { databases_list: session[:databases_list] }
 end
 
 get '/config_property/?' do
   session[:db_id] = db_id = params[:db_id]
-  notionpaper = NotionPaper.new()
-  databases_list = notionpaper.get_notion_databases()
-  chosen_database = notionpaper.databases_results.find { |db| db['id'] == db_id }
-  available_properties = []
-  chosen_database['properties'].each do |property|
-    # 11/24/2022: having issues querying for 'status', skipping for now
-    if (property[1]['type'] == 'select') # || property[1]['type'] == 'status' || property[1]['type'] == 'checkbox')
-      available_properties << [property[0], property[1]['type']]
-    end
-  end
-  erb :config_property, locals: { properties: available_properties }
+  chosen_database = session[:databases_list].find { |db| db[:id] == db_id }
+  filter_options = session[:filter_properties].select { |prop| prop[:id] == db_id && prop[:type] == 'select' }
+  filter_options = filter_options.map { |prop| prop[:options] }
+  ap "FILTER_OPTIONS"
+  ap filter_options
+  erb :config_property, locals: { properties: filter_options }
 end
 
 get '/config_filter/?' do

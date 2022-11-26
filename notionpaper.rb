@@ -17,27 +17,36 @@ class NotionPaper
   def get_notion_databases()
     # get all databases this API key has access to
     databases_list = []
+    filter_options = []
     query = {"filter": {"value": "database", "property": "object"}}
     @notion.search(query) do |db|
       db[:results].each do |database|
-        if database[:title]&.first&.[](:plain_text)
-          # ap database
+        if (database[:title]&.first&.[](:plain_text))
           db_obj = {
             :id => database[:id],
             :title => database[:title]&.first&.[](:plain_text),
             :filter_properties => []
           }
+          filter_prop_options = {
+            :id => database[:id],
+            :name => '',
+            :type => '',
+            :options => []
+          }
           database[:properties].each do |prop|
             type = prop[1][:type]
-            if type == 'select' || type == 'status' || type == 'checkbox'
-              db_obj[:filter_properties].push [prop[1][:name], type]
+            if (type == 'select' || type == 'status' || type == 'checkbox')
+              filter_prop_options[:name] = prop[1][:name]
+              filter_prop_options[:type] = type
+              filter_prop_options[:options].push prop[1][type.to_sym][:options]
+              filter_options.push(filter_prop_options)
             end
           end
           databases_list.push db_obj
         end
       end
     end
-    return databases_list
+    return [databases_list, filter_options]
   end
 
   def run_notion_query(db_id, query)
