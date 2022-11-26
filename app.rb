@@ -6,25 +6,27 @@ enable :sessions
 
 get '/' do
   return params[:error] if params[:error]
-  # if filter_option was not passed in, and does not exist in session, try grabbing it from the config
-  if (defined?(CONFIG) && params[:filter_option].nil? && session[:filter_option].nil?)
-    show_message = "Using values from config.rb"
-    session[:db_id] = CONFIG['db_id']
-    session[:filter_property] = CONFIG['chosen_filter_property_name']
-    session[:filter_option] = CONFIG['chosen_filter_option_name']
-  # else if filter_option was passed in, use that
-  elsif (params[:filter_option])
-    session[:filter_option] = params[:filter_option]
-  # else use all values from session
-  else
+  # if filter_options was passed in, use that
+  if (params[:filter_options])
+    session[:filter_options] = params[:filter_options].split(',')
+  # if everything is stored in session, we'll use that
+  elsif (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
+  # try grabbing data out of the config
+  elsif (defined?(CONFIG))
+    show_message = "Using values from session OR config.rb"
+    session[:db_id] = session[:db_id] || CONFIG['db_id']
+    session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
+    session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
+    session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
   end
   # if we have everything we need to query...
-  if (session[:db_id] || session[:filter_property] || session[:filter_option])
+  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     config = {
       'db_id' => session[:db_id],
       'chosen_filter_property_name' => session[:filter_property],
-      'chosen_filter_option_name' => session[:filter_option]
+      'filter_type' => session[:filter_type],
+      'filter_options' => session[:filter_options]
     }
     tasks = get_notion_tasks(config)
   # else, things have gone wrong
@@ -32,7 +34,7 @@ get '/' do
     tasks = []
     show_message = "Session is empty: #{session.inspect}"
   end
-  erb :index, locals: { tasks: tasks, show_message: show_message }
+  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options_data: session[:filter_options_data] }
 end
 
 get '/complete_task/:id' do
@@ -62,10 +64,10 @@ get '/api/complete_task/:id' do
   config = {
     'db_id' => session[:db_id],
     'chosen_filter_property_name' => session[:filter_property],
-    'chosen_filter_option_name' => session[:filter_option]
+    'filter_options' => session[:filter_options]
   }
   tasks = get_notion_tasks(config)
-  erb '_tasks'.to_sym, locals: { tasks: tasks }
+  erb '_tasks'.to_sym, locals: { tasks: tasks, filter_options_data: session[:filter_options_data] }, layout: false
 end
 
 get '/config_database/?' do
@@ -79,10 +81,10 @@ get '/config_property/?' do
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == db_id }
-  puts chosen_database['properties']
   available_properties = []
   chosen_database['properties'].each do |property|
-    if (property[1]['type'] == 'select' || property[1]['type'] == 'status')
+    # 11/24/2022: having issues querying for 'status', skipping for now
+    if (property[1]['type'] == 'select') # || property[1]['type'] == 'status' || property[1]['type'] == 'checkbox')
       available_properties << [property[0], property[1]['type']]
     end
   end
@@ -95,6 +97,7 @@ get '/config_filter/?' do
   notionpaper = NotionPaper.new()
   databases_list = notionpaper.get_notion_databases()
   chosen_database = notionpaper.databases_results.find { |db| db['id'] == session[:db_id] }
-  filter_options = chosen_database['properties'][filter_property][filter_type]['options']
-  erb :config_filter, locals: { filter_options: filter_options }
+  filter_options_data = chosen_database['properties'][filter_property][filter_type]['options']
+  session[:filter_options_data] = filter_options_data
+  erb :config_filter, locals: { filter_options_data: filter_options_data }
 end

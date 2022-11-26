@@ -4,10 +4,11 @@
 
 <p>DB ID: <%= session[:db_id] %></p>
 <p>filter_property: <%= session[:filter_property] %></p>
-<p>filter_option: <%= session[:filter_option] %></p>
+<p>filter_type: <%= session[:filter_type] %></p>
+<p>filter_options: <%= session[:filter_options] %></p>
 
 <div class="tasks">
-  <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks} %>
+  <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks, filter_options_data: filter_options_data } %>
 </div>
 
 <p><a href="/config_database">Configure</a></p>

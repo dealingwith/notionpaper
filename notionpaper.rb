@@ -1,4 +1,5 @@
 require 'notion_ruby'
+
 class NotionPaper
   attr_reader :databases_results
 
@@ -21,7 +22,13 @@ class NotionPaper
   end
 
   def run_notion_query(db_id, query)
-    @notion.databases(db_id).query(query)
+    puts query
+    begin
+      @notion.databases(db_id).query(query)
+    rescue => exception
+      puts exception
+      return false
+    end
   end
 
 end
@@ -33,29 +40,47 @@ def get_notion_tasks(config=nil)
     # load database and filter configs from passed-in values
     db_id = config['db_id']
     chosen_filter_property_name = config['chosen_filter_property_name']
-    chosen_filter_option_name = config['chosen_filter_option_name']
+    filter_type = config['filter_type']
+    filter_options = config['filter_options']
   else
     return
   end
 
-  unless chosen_filter_property_name.nil? || chosen_filter_option_name.nil?
-    query = {
-      "filter": {
-        "property": chosen_filter_property_name,
-        "select": {
-          "equals": chosen_filter_option_name
+  if !chosen_filter_property_name.nil?
+    if !filter_options.nil?
+      subquery = []
+      filter_options.each { |option|
+        subquery << {
+          :property => chosen_filter_property_name,
+          filter_type.to_sym => { equals: option }
         }
-      },
-      page_size: 100
-    }
+      }
+      query = {
+        "filter": {
+          "or": subquery
+        },
+        page_size: 100
+      }
+    else
+      query = { page_size: 100 }
+    end
   else
     query = { page_size: 100 }
   end
-
+  query[:sorts] = [
+    {
+        "property": chosen_filter_property_name,
+        "direction": "descending"
+    }
+  ]
   results = notionpaper.run_notion_query(db_id, query)
-  tasks = results['results']
+  if results
+    tasks = results['results']
+  else
+    tasks = []
+  end
 
-  File.write 'tasks.rb', tasks.to_s # for debugging
+  # File.write 'tasks.rb', tasks.to_s # for debugging
 
   return tasks
 end

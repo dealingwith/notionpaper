@@ -4,7 +4,7 @@
 # CONFIG = {
 #   'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
 #   'chosen_filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. 'Status'
-#   'chosen_filter_option_name' => '[PUT VALUE TO FILTER BY HERE]' # e.g. 'Todo'
+#   'filter_options' => ['In Progress', 'Priority'] # <-- e.g.
 # }
 # CONFIG = nil # set to nil to use the interactive mode
 
@@ -56,12 +56,13 @@ def cli_prompt_for_config_values()
     chosen_filter_property_options.each_with_index { |option, index| puts "#{index}: #{option['name']}" }
     print "Enter the number of the option you want to use: "
     chosen_filter_option = gets.chomp.to_i
-    chosen_filter_option_name = chosen_filter_property_options[chosen_filter_option]['name']
+    filter_options = [chosen_filter_property_options[chosen_filter_option]['name']]
   end
   return {
     'db_id' => db_id,
     'chosen_filter_property_name' => chosen_filter_property_name,
-    'chosen_filter_option_name' => chosen_filter_option_name
+    'filter_type' => 'select',
+    'filter_options' => filter_options
   }
 end
 
