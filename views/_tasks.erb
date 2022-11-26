@@ -4,14 +4,32 @@
       <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
       <% next if title.nil? %>
       <% title.strip! %>
-      <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}" %>
+      <% task_id = task['id'].tr("-", "") %>
+      <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task_id}" %>
       <li style="list-style: none">
-        <input type="checkbox" onClick="completeTask('<%= task['id'].tr("-", "") %>')">
+        <!-- <input type="checkbox" onClick="completeTask('<%= task_id %>')"> -->
         <a href="<%= url %>" target="_blank"><%= title %></a>
-        <% filter_name = task.dig('properties', 'Status', 'select', 'name') %>
-        <% filter = filter_options_data.detect { |o| o['name'] == filter_name } %>
-        <span style="color: <%= filter['color'] %>"><%= filter_name %></span>
+        <!-- <a href="/complete_task/<%= task_id %>">mark as completed</a> -->
       </li>
     <% end %>
   </ul>
 <% end %>
+
+<script type="text/javascript">
+
+  function completeTask(task_id) {
+    fetch('/api/complete_task/' + task_id, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/html'
+      }
+    }).then(function(response) {
+      // response is a promise
+      return response.text();
+    }).then(function(my_text) {
+      // text() gave us the text response, which in our case is the HTML to inject
+      document.querySelector(".tasks").innerHTML = my_text;
+    });
+  }
+
+</script>

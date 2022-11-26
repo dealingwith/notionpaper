@@ -1,5 +1,6 @@
 # require 'notion_ruby'
 require 'notion-ruby-client'
+require 'awesome_print'
 
 class NotionPaper
   attr_reader :databases_results
@@ -21,42 +22,52 @@ class NotionPaper
     query = {"filter": {"value": "database", "property": "object"}}
     @notion.search(query) do |db|
       db[:results].each do |database|
-        if (database[:title]&.first&.[](:plain_text))
+        if (database[:title]&.first&.dig('plain_text'))
           db_obj = {
             :id => database[:id],
-            :title => database[:title]&.first&.[](:plain_text),
+            :title => database[:title]&.first&.dig('plain_text'),
             :filter_properties => []
           }
-          filter_prop_options = {
-            :id => database[:id],
-            :name => '',
-            :type => '',
-            :options => []
-          }
           database[:properties].each do |prop|
+            filter_prop_options = {
+              :name => nil,
+              :type => nil,
+              :options => nil
+            }
             type = prop[1][:type]
-            if (type == 'select' || type == 'status' || type == 'checkbox')
-              filter_prop_options[:name] = prop[1][:name]
+            if (type == 'select') # || type == 'status' || type == 'checkbox')
+              filter_prop_options[:name] = prop[0]
               filter_prop_options[:type] = type
-              filter_prop_options[:options].push prop[1][type.to_sym][:options]
-              filter_options.push(filter_prop_options)
+              filter_prop_options[:options] = prop[1][type.to_sym][:options]
+              db_obj[:filter_properties].push(filter_prop_options)
             end
           end
           databases_list.push db_obj
         end
       end
     end
-    return [databases_list, filter_options]
+    return databases_list
   end
 
-  def run_notion_query(db_id, query)
-    puts query
+  def run_notion_query(db_id, sorts, filter)
     begin
-      @notion.databases(db_id).query(query)
+      @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
     rescue => exception
       puts exception
       return false
     end
+  end
+
+  def complete_task(notion_page_id, filter_property, filter_option, filter_option_data)
+    # TODO
+    # properties = {
+    #   "#{filter_property}": {
+    #     "#{filter_option}": filter_option_data
+    #   }
+    # }
+    # ap "COMPLETE_TASK PROPERTIES:"
+    # ap properties
+    # @notion.update_page(page_id: notion_page_id, properties: properties)
   end
 
 end
@@ -83,25 +94,22 @@ def get_notion_tasks(config=nil)
           filter_type.to_sym => { equals: option }
         }
       }
-      query = {
-        "filter": {
-          "or": subquery
-        },
-        page_size: 100
+      filter = {
+        "or": subquery
       }
     else
-      query = { page_size: 100 }
+      filter = { }
     end
   else
-    query = { page_size: 100 }
+    filter = { }
   end
-  query[:sorts] = [
+  sorts = [
     {
         "property": chosen_filter_property_name,
         "direction": "descending"
     }
   ]
-  results = notionpaper.run_notion_query(db_id, query)
+  results = notionpaper.run_notion_query(db_id, sorts, filter)
   if results
     tasks = results['results']
   else

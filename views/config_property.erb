@@ -3,8 +3,8 @@
 <ul>
   <% properties.each do |prop| %>
     <li>
-      <a href="/config_filter?filter_property=<%= prop[0] %>&filter_type=<%= prop[1] %>">
-        <%= prop[0] %>
+      <a href="/config_filter?filter_property=<%= prop[:name] %>&filter_type=<%= prop[:type] %>">
+        <%= prop[:name] %>
       </a>
     </li>
   <% end %>
