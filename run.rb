@@ -54,7 +54,7 @@ def cli_prompt_for_config_values()
     'db_id' => chosen_database[:id],
     'chosen_filter_property_name' => chosen_filter_property[:name],
     'filter_type' => chosen_filter_property[:type],
-    'filter_options' => [chosen_filter_option["name"]]
+    'filter_options' => [chosen_filter_option[:name]]
   }
 end
 
