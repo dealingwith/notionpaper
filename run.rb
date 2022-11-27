@@ -31,38 +31,30 @@ def cli_prompt_for_config_values()
   puts "** Databases"
   databases_list.each_with_index { |db, index| puts "#{index}: #{db[:title]}" }
   print "Enter the number of the database you want to use: "
-  db_index = gets.chomp.to_i
-  # get the database ID
-  db_id = databases_list[db_index][:id]
-  # get the database's info
-  chosen_database = notionpaper.databases_results[db_index]
+  chosen_database = databases_list[gets.chomp.to_i]
 
   # present the properties to filter by
   # see https://developers.notion.com/reference/property-object
   puts "** Choose a property to filter by"
   puts "N: No filter"
-  properties = chosen_database['properties']
-  properties.each_with_index { |prop, index| puts "#{index}: #{prop[1]['name']}" }
+  properties = chosen_database[:filter_properties]
+  properties.each_with_index { |prop, index| puts "#{index}: #{prop[:name]}" }
   print "Enter the number of the property you want to use: "
   chosen_filter = gets.chomp
+  chosen_filter_property = properties[chosen_filter.to_i]
   unless chosen_filter == 'N'
-    chosen_filter_property = chosen_filter.to_i
-    chosen_filter_property_name = properties.keys[chosen_filter_property]
-
     # present the options for the chosen property to filter by
     # see https://developers.notion.com/reference/post-database-query-filter
     puts "** Choose an option for the property to filter by"
-    chosen_filter_property_options = properties[chosen_filter_property_name]['select']['options']
-    chosen_filter_property_options.each_with_index { |option, index| puts "#{index}: #{option['name']}" }
+    chosen_filter_property[:options].each_with_index { |option, index| puts "#{index}: #{option['name']}" }
     print "Enter the number of the option you want to use: "
-    chosen_filter_option = gets.chomp.to_i
-    filter_options = [chosen_filter_property_options[chosen_filter_option]['name']]
+    chosen_filter_option = chosen_filter_property[:options][gets.chomp.to_i]
   end
   return {
-    'db_id' => db_id,
-    'chosen_filter_property_name' => chosen_filter_property_name,
-    'filter_type' => 'select',
-    'filter_options' => filter_options
+    'db_id' => chosen_database[:id],
+    'chosen_filter_property_name' => chosen_filter_property[:name],
+    'filter_type' => chosen_filter_property[:type],
+    'filter_options' => [chosen_filter_option["name"]]
   }
 end
 
