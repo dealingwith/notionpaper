@@ -1,6 +1,6 @@
 <p>Choose filters:</p>
 <ul>
-  <% filter_options_data.each do |filter_option| %>
+  <% filter_options.each do |filter_option| %>
     <li>
       <label><input type="checkbox" name="<%= filter_option['name'] %>" /> <%= filter_option['name'] %></label>
     </li>
