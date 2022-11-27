@@ -1,4 +1,3 @@
-# require 'notion_ruby'
 require 'notion-ruby-client'
 require 'awesome_print'
 
@@ -6,7 +5,6 @@ class NotionPaper
   attr_reader :databases_results
 
   def initialize()
-    # @notion = NotionRuby.new({ access_token: NOTION_API_KEY })
     Notion.configure do |config|
       config.token = NOTION_API_KEY
     end
