@@ -86,6 +86,6 @@ get '/config_filter/?' do
   session[:filter_property] = filter_property = params[:filter_property]
   session[:filter_type] = filter_type = params[:filter_type]
   chosen_database = session[:databases_list].find { |db| db[:id] == session[:db_id] }
-  filter_options_data = chosen_database[:filter_properties].find { |prop| prop[:name] == filter_property }[:options]
-  erb :config_filter, locals: { filter_options_data: filter_options_data }
+  filter_options = chosen_database[:filter_properties].find { |prop| prop[:name] == filter_property }[:options]
+  erb :config_filter, locals: { filter_options: filter_options }
 end
