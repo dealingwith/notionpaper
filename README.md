@@ -30,7 +30,7 @@ NOTION_BASE_URL = '[YOUR NOTION BASE URL]' # for example https://www.notion.so/u
 # optional:
 CONFIG = {
   'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
-  'filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. what you've named the column in Notion, e.g. 'Status'
+  'chosen_filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. what you've named the column in Notion, e.g. 'Status'
   'filter_type' => 'select', # or Notion's new 'status' is supported
   'filter_options' => ['In Progress', 'Priority'] # what values in that column to filter by, those are examples, could be anything
 }
@@ -58,7 +58,9 @@ Observe output in `notion.taskpaper`, `notion.markdown`, and `notion.html`.
 
 #### To run the app with dynamic config options
 
-Set `CONFIG` in `config.rb` to `nil` or comment it out completely, then re-run the (command-line or web) app. It will prompt you for which database, which property to filter by, and which option of that property to filter by.
+The command-line app will ask if you want to use values in the config or not. If not, it will prompt you for which database, which property to filter by, and which option of that property to filter by.
+
+Or, for the web app, set `CONFIG` in `config.rb` to `nil` or comment it out completely, then re-run the app.
 
 ## Important:
 
