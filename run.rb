@@ -45,16 +45,16 @@ def cli_prompt_for_config_values()
   unless chosen_filter == 'N'
     # present the options for the chosen property to filter by
     # see https://developers.notion.com/reference/post-database-query-filter
-    puts "** Choose an option for the property to filter by"
+    puts "** Choose option(s) for the property to filter by"
     chosen_filter_property[:options].each_with_index { |option, index| puts "#{index}: #{option['name']}" }
-    print "Enter the number of the option you want to use: "
-    chosen_filter_option = chosen_filter_property[:options][gets.chomp.to_i]
+    print "Enter the number(s) of the option(s) you want to use (separate them by spaces): "
+    chosen_filter_options = gets.split.map {|option_index| chosen_filter_property[:options][option_index.to_i][:name]}
   end
   return {
     'db_id' => chosen_database[:id],
     'chosen_filter_property_name' => chosen_filter_property[:name],
     'filter_type' => chosen_filter_property[:type],
-    'filter_options' => [chosen_filter_option[:name]]
+    'filter_options' => chosen_filter_options 
   }
 end
 
