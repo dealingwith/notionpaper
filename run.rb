@@ -47,7 +47,7 @@ def cli_prompt_for_config_values()
     # see https://developers.notion.com/reference/post-database-query-filter
     puts "** Choose option(s) for the property to filter by"
     chosen_filter_property[:options].each_with_index { |option, index| puts "#{index}: #{option['name']}" }
-    print "Enter the number(s) of the option(s) you want to use (separate them by spaces): "
+    print "Enter the number(s) of the option(s) you want to use (separated by spaces): "
     chosen_filter_options = gets.split.map {|option_index| chosen_filter_property[:options][option_index.to_i][:name]}
   end
   return {
