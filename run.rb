@@ -64,7 +64,6 @@ tasks = get_notion_tasks(config)
 date_string = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
 taskpaper_content = date_string
 markdown_content = date_string
-template_content = []
 
 tasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
@@ -74,11 +73,10 @@ tasks.each do |task|
   taskpaper_content << "- #{title}\n"
   taskpaper_content << "  #{url}\n"
   markdown_content << "- [ ] [#{title}](#{url})\n"
-  template_content << [title, url]
 end
 
 File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
-html_content = ERB.new(File.read('html_file_template.erb')).result(binding)
+html_content = ERB.new(File.read('views/_tasks.erb')).result(binding)
 File.write 'notion.html', html_content
 PDFKit.new(html_content).to_file("notion.pdf")
