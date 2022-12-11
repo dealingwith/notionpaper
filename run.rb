@@ -8,18 +8,10 @@
 # }
 # CONFIG = nil # set to nil to use the interactive mode
 
-require 'redcarpet'
+require 'erb'
 require 'pdfkit'
 require './notionpaper'
 load 'config.rb'
-
-class CustomRender < Redcarpet::Render::HTML
-  def list_item(text, list_type)
-    notion_page_id = text.match(/ID:\[(.*)\]/)[1]
-    text.sub!('[ ]', '<input type="checkbox">')
-    %(<li style="list-style: none" onClick="location.href='/complete_task/#{notion_page_id}'">#{text}</li>)
-  end
-end
 
 def cli_prompt_for_config_values()
   notionpaper = NotionPaper.new()
@@ -54,7 +46,7 @@ def cli_prompt_for_config_values()
     'db_id' => chosen_database[:id],
     'chosen_filter_property_name' => chosen_filter_property[:name],
     'filter_type' => chosen_filter_property[:type],
-    'filter_options' => chosen_filter_options 
+    'filter_options' => chosen_filter_options
   }
 end
 
@@ -69,8 +61,10 @@ end
 
 tasks = get_notion_tasks(config)
 
-taskpaper_content = ''
-markdown_content = ''
+date_string = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
+taskpaper_content = date_string
+markdown_content = date_string
+template_content = []
 
 tasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
@@ -79,11 +73,12 @@ tasks.each do |task|
   url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
   taskpaper_content << "- #{title}\n"
   taskpaper_content << "  #{url}\n"
-  markdown_content << "- [ ] ID:[#{task['id'].tr("-", "")}] [#{title}](#{url})\n"
+  markdown_content << "- [ ] [#{title}](#{url})\n"
+  template_content << [title, url]
 end
 
 File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
-html_content = Redcarpet::Markdown.new(CustomRender).render(markdown_content)
+html_content = ERB.new(File.read('html_file_template.erb')).result(binding)
 File.write 'notion.html', html_content
 PDFKit.new(html_content).to_file("notion.pdf")
