@@ -6,9 +6,9 @@
       <% title.strip! %>
       <% task_id = task['id'].tr("-", "") %>
       <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task_id}" %>
-      <li style="list-style: none">
+      <li>
         <!-- <input type="checkbox" onClick="completeTask('<%= task_id %>')"> -->
-        <a href="<%= url %>" target="_blank"><%= title %></a>
+        &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
         <!-- <a href="/complete_task/<%= task_id %>">mark as completed</a> -->
       </li>
     <% end %>

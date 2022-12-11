@@ -1,14 +1,21 @@
 <%= erb '_head'.to_sym %>
 
-<p>Message: <%= show_message %></p>
+<p class="no-print">Message: <%= show_message %></p>
 
-<p>DB ID: <%= session[:db_id] %></p>
-<p>filter_property: <%= session[:filter_property] %></p>
-<p>filter_type: <%= session[:filter_type] %></p>
-<p>filter_options: <%= session[:filter_options] %></p>
+<details class="no-print" style="cursor: pointer">
+  <summary>Query data</summary>
+  <div style="padding: 10px 20px; background-color: #f0f0f0">
+    <p class="no-print">DB ID: <%= session[:db_id] %></p>
+    <p class="no-print">filter_property: <%= session[:filter_property] %></p>
+    <p class="no-print">filter_type: <%= session[:filter_type] %></p>
+    <p class="no-print">filter_options: <%= session[:filter_options] %></p>
+  </div>
+</details>
+
+<p class="no-print"><a href="#" onClick="window.print()">Print</a></p>
 
 <div class="tasks">
   <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks, filter_options: filter_options } %>
 </div>
 
-<p><a href="/config_database">Configure</a></p>
+<p class="no-print"><a href="/config_database">Configure</a></p>
