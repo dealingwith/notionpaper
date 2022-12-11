@@ -15,7 +15,7 @@ get '/' do
     show_message = "Using values from session"
   # try grabbing data out of the config
   elsif (defined?(CONFIG))
-    show_message = "Using values from session OR config.rb"
+    show_message = "Using values from config.rb and/or session"
     session[:db_id] = session[:db_id] || CONFIG['db_id']
     session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
     session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
@@ -33,7 +33,7 @@ get '/' do
   # else, things have gone wrong
   else
     tasks = []
-    show_message = "Session is empty: #{session.inspect}"
+    show_message = "Session is empty"
   end
   erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
 end
