@@ -19,6 +19,7 @@ class NotionPaper
     filter_options = []
     query = {"filter": {"value": "database", "property": "object"}}
     @notion.search(query) do |db|
+      # File.write 'db.json', JSON.pretty_generate(db)
       db[:results].each do |database|
         if (database[:title]&.first&.dig('plain_text'))
           db_obj = {
@@ -108,13 +109,13 @@ def get_notion_tasks(config=nil)
     }
   ]
   results = notionpaper.run_notion_query(db_id, sorts, filter)
+  File.write 'results.json', JSON.pretty_generate(results)
+
   if results
     tasks = results['results']
   else
     tasks = []
   end
-
-  # File.write 'tasks.rb', tasks.to_s # for debugging
 
   return tasks
 end
