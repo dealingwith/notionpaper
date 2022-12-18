@@ -61,9 +61,8 @@ end
 
 tasks = get_notion_tasks(config)
 
-date_string = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
-taskpaper_content = date_string
-markdown_content = date_string
+taskpaper_content = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
+markdown_content = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
 
 tasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
