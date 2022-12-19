@@ -52,19 +52,25 @@ Go to `http://127.0.0.1:4567/`
 
 ### To run the command-line app
 
-`$ ruby run.rb`
+`$ ruby run.rb --use-config`
 
 Observe output in `notion.taskpaper`, `notion.markdown`, and `notion.html`.
 
-#### To run the app with dynamic config options
+### To run the app with dynamic config options
+
+#### Command-line
+
+`$ ruby run.rb`
 
 The command-line app will ask if you want to use values in the config or not. If not, it will prompt you for which database, which property to filter by, and which option of that property to filter by.
 
-Or, for the web app, set `CONFIG` in `config.rb` to `nil` or comment it out completely, then re-run the app.
+#### Web app
+
+Set `CONFIG` in `config.rb` to `nil` or comment it out completely, then re-run the app.
 
 ## Important:
 
-_Currently only supports filter properties that can do `equals`_, i.e. it does request to the Notion API:
+_Currently only supports filter properties that can do `equals`_, i.e. it does this type of request to the Notion API:
 
 ```json
 {
@@ -85,4 +91,3 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does r
 * [notion-ruby-client](https://github.com/orbit-love/notion-ruby-client)
 * [Sinatra](https://sinatrarb.com/)
 * [Moneta](https://github.com/moneta-rb/moneta)
-* [redcarpet](https://github.com/vmg/redcarpet) (for command-line app only)
