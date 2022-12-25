@@ -50,10 +50,15 @@ def cli_prompt_for_config_values()
   }
 end
 
-print "Use values in config file? (y/n): "
-use_config = gets.chomp
+if ARGV[0] && ARGV[0] == '--use-config'
+  use_config = true
+else
+  print "Use values in config file? (y/n): "
+  answer = gets.chomp
+  use_config = (answer == 'y' || answer == 'Y')
+end
 
-if ((use_config == 'y' || use_config == 'Y') && CONFIG)
+if (use_config && CONFIG)
   config = CONFIG
 else
   config = cli_prompt_for_config_values()
@@ -61,8 +66,8 @@ end
 
 tasks = get_notion_tasks(config)
 
-taskpaper_content = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
-markdown_content = "Data fetched on #{Date.today.strftime('%Y-%m-%d')}\n\n"
+taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
 tasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
