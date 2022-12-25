@@ -40,8 +40,6 @@ class NotionPaper
               filter_prop_options[:type] = type
               filter_prop_options[:options] = prop[1][type.to_sym][:options]
               db_obj[:filter_properties].push(filter_prop_options)
-            elsif (type == 'relation' && type[:relation][:database_id] == database[:id])
-              puts "found a relation to itself"
             end
           end
           databases_list.push db_obj
