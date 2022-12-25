@@ -19,7 +19,7 @@ class NotionPaper
     filter_options = []
     query = {"filter": {"value": "database", "property": "object"}}
     @notion.search(query) do |db|
-      # File.write 'db.json', JSON.pretty_generate(db)
+      File.write 'db.json', JSON.pretty_generate(db)
       db[:results].each do |database|
         if (database[:title]&.first&.dig('plain_text'))
           db_obj = {
@@ -34,11 +34,14 @@ class NotionPaper
               :options => nil
             }
             type = prop[1][:type]
+            puts "type: #{type}"
             if (type == 'select' || type == 'status') # || type == 'checkbox')
               filter_prop_options[:name] = prop[0]
               filter_prop_options[:type] = type
               filter_prop_options[:options] = prop[1][type.to_sym][:options]
               db_obj[:filter_properties].push(filter_prop_options)
+            elsif (type == 'relation' && type[:relation][:database_id] == database[:id])
+              puts "found a relation to itself"
             end
           end
           databases_list.push db_obj

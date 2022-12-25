@@ -11,3 +11,4 @@ databases.rb
 .DS_Store
 .bundle
 vendor
+db.json

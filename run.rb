@@ -68,6 +68,21 @@ tasks = get_notion_tasks(config)
 
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+subtasks = []
+
+tasks.each do |task|
+  if (!task.dig('properties', 'Parent task', 'relation').length.zero?)
+    # this is a child task
+    puts "I'm a subtask!: " + task.dig('properties', 'Subtask', 'relation').to_s
+    subtasks << task
+    # you could take out this task out of the tasks array here if you wanted to
+    next
+  end
+end
+
+puts "Subtasks: " + subtasks.to_s
+# mutate tasks to add subtasks to parent tasks
+# James
 
 tasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
@@ -75,8 +90,15 @@ tasks.each do |task|
   title.strip!
   url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
   taskpaper_content << "- #{title}\n"
-  taskpaper_content << "  #{url}\n"
-  markdown_content << "- [ ] [#{title}](#{url})\n"
+  # if (!task.subtasks.length.zero?)
+  #   # create a sub-list of these tasks
+  #   subtasks.each do |subtask|
+  #     subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+  #     taskpaper_content << "  - #{subtask_title}\n"
+  #   end
+  end
+  # taskpaper_content << "  #{url}\n"
+  # markdown_content << "- [ ] [#{title}](#{url})\n"
 end
 
 File.write 'notion.taskpaper', taskpaper_content
