@@ -19,7 +19,7 @@ class NotionPaper
     filter_options = []
     query = {"filter": {"value": "database", "property": "object"}}
     @notion.search(query) do |db|
-      # File.write 'db.json', JSON.pretty_generate(db)
+      File.write 'db.json', JSON.pretty_generate(db)
       db[:results].each do |database|
         if (database[:title]&.first&.dig('plain_text'))
           db_obj = {
@@ -34,6 +34,7 @@ class NotionPaper
               :options => nil
             }
             type = prop[1][:type]
+            puts "type: #{type}"
             if (type == 'select' || type == 'status') # || type == 'checkbox')
               filter_prop_options[:name] = prop[0]
               filter_prop_options[:type] = type
