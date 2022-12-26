@@ -51,7 +51,7 @@ def cli_prompt_for_config_values()
   }
 end
 
-if ARGV[0] && ARGV[0] == '--use-config'
+if (ARGV[0] && ARGV[0] == '--use-config')
   use_config = true
 else
   print "Use values in config file? (y/n): "
@@ -71,43 +71,47 @@ taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 subtasks = []
 
+tasks_no_subtasks = tasks.map do |task|
+  task[:subtasks] = []
+  task
+end
 tasks.each do |task|
   if (!task.dig('properties', config['parent_property_name'], 'relation')&.length&.zero?)
     # this is a subtask
     subtasks << task
-    tasks.delete(task)
-    # you could take out this task out of the tasks array here if you wanted to
-    next
+    tasks_no_subtasks.delete_if { |t| t[:id] == task[:id] }
   end
 end
 
+# File.write 'tasks.json', JSON.pretty_generate(tasks)
+# File.write 'tasks_no_subtasks.json', JSON.pretty_generate(tasks_no_subtasks)
+# File.write 'subtasks.json', JSON.pretty_generate(subtasks)
+
 # mutate tasks to add subtasks to parent tasks
 subtasks.each do |subtask|
-  tasks.each do |task|
-    task.subtasks = []
-    if task[:id] == subtask.dig('properties', config['parent_property_name'], 'relation', 0, 'id')
-      task.subtasks << subtask
+  tasks_no_subtasks.each do |task|
+    if (task[:id] == subtask.dig('properties', config['parent_property_name'], 'relation', 0, 'id'))
+      task[:subtasks] << subtask
     end
   end
 end
 
-tasks.each do |task|
+tasks_no_subtasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
   next if title.nil?
   title.strip!
   url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
   taskpaper_content << "- #{title}\n"
+  # adding the URL to the taskpaper output gets noisy, especially when there are subtasks, so we're just commenting this out for now
+  # taskpaper_content << "  #{url}\n"
   markdown_content << "- [ ] [#{title}](#{url})\n"
-  if (!task&.subtasks&.length&.zero?)
-    # create a sub-list of these tasks
-    task.subtasks.each do |subtask|
-      subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
-      subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
-      taskpaper_content << "  - #{subtask_title}\n"
-      markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
-    end
+  # create a sub-list of subtasks
+  task[:subtasks].each do |subtask|
+    subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+    subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
+    taskpaper_content << "  - #{subtask_title}\n"
+    markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
   end
-  #taskpaper_content << "  #{url}\n"
 end
 
 File.write 'notion.taskpaper', taskpaper_content
