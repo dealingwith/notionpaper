@@ -34,7 +34,6 @@ class NotionPaper
               :options => nil
             }
             type = prop[1][:type]
-            puts "type: #{type}"
             if (type == 'select' || type == 'status') # || type == 'checkbox')
               filter_prop_options[:name] = prop[0]
               filter_prop_options[:type] = type

@@ -43,11 +43,20 @@ def cli_prompt_for_config_values()
     print "Enter the number(s) of the option(s) you want to use (separated by spaces): "
     chosen_filter_options = gets.split.map {|option_index| chosen_filter_property[:options][option_index.to_i][:name]}
   end
+  print "Process subtasks? (y/n): "
+  process_subtasks = gets.chomp.downcase
+  if process_subtasks == 'y'
+    puts "What is your parent task property name (e.g. 'Parent Task')?"
+    parent_property_name = gets.chomp
+  else
+    parent_property_name = nil
+  end
   return {
     'db_id' => chosen_database[:id],
     'chosen_filter_property_name' => chosen_filter_property[:name],
     'filter_type' => chosen_filter_property[:type],
-    'filter_options' => chosen_filter_options
+    'filter_options' => chosen_filter_options,
+    'parent_property_name' => parent_property_name
   }
 end
 
