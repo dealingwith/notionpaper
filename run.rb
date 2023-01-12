@@ -82,11 +82,13 @@ tasks_no_subtasks.each do |task|
   # taskpaper_content << "  #{url}\n"
   markdown_content << "- [ ] [#{title}](#{url})\n"
   # create a sub-list of subtasks
-  task[:subtasks].each do |subtask|
-    subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
-    subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
-    taskpaper_content << "  - #{subtask_title}\n"
-    markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
+  unless task[:subtasks].nil?
+    task[:subtasks].each do |subtask|
+      subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+      subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
+      taskpaper_content << "  - #{subtask_title}\n"
+      markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
+    end
   end
 end
 

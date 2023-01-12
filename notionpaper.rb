@@ -122,6 +122,8 @@ def get_notion_tasks(config=nil)
 end
 
 def process_subtasks(tasks, config)
+  return tasks unless config['parent_property_name']
+
   subtasks = []
 
   tasks_no_subtasks = tasks.map do |task|
