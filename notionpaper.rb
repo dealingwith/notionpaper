@@ -120,3 +120,34 @@ def get_notion_tasks(config=nil)
 
   return tasks
 end
+
+def process_subtasks(tasks, config)
+  subtasks = []
+
+  tasks_no_subtasks = tasks.map do |task|
+    task[:subtasks] = []
+    task
+  end
+  tasks.each do |task|
+    if (!task.dig('properties', config['parent_property_name'], 'relation')&.length&.zero?)
+      # this is a subtask
+      subtasks << task
+      tasks_no_subtasks.delete_if { |t| t[:id] == task[:id] }
+    end
+  end
+
+  # File.write 'tasks.json', JSON.pretty_generate(tasks)
+  # File.write 'tasks_no_subtasks.json', JSON.pretty_generate(tasks_no_subtasks)
+  # File.write 'subtasks.json', JSON.pretty_generate(subtasks)
+
+  # mutate tasks to add subtasks to parent tasks
+  subtasks.each do |subtask|
+    tasks_no_subtasks.each do |task|
+      if (task[:id] == subtask.dig('properties', config['parent_property_name'], 'relation', 0, 'id'))
+        task[:subtasks] << subtask
+      end
+    end
+  end
+
+  return tasks
+end
