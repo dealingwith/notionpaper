@@ -150,5 +150,5 @@ def process_subtasks(tasks, config)
     end
   end
 
-  return tasks
+  return tasks_no_subtasks
 end

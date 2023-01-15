@@ -46,7 +46,7 @@ def cli_prompt_for_config_values()
   print "Process subtasks? (y/n): "
   process_subtasks = gets.chomp.downcase
   if process_subtasks == 'y'
-    puts "What is your parent task property name (e.g. 'Parent Task')?"
+    print "What is your parent task property name (e.g. 'Parent Task')? "
     parent_property_name = gets.chomp
   else
     parent_property_name = nil
@@ -74,12 +74,20 @@ else
   config = cli_prompt_for_config_values()
 end
 
+# get all tasks
 tasks = get_notion_tasks(config)
+
+# if the user said process subtasks, do that
+# else, use all tasks
+if (config['parent_property_name'])
+  puts "Processing subtasks..."
+  tasks_no_subtasks = process_subtasks(tasks, config)
+else
+  tasks_no_subtasks = tasks
+end
 
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
-
-tasks_no_subtasks = process_subtasks(tasks, config)
 
 tasks_no_subtasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
