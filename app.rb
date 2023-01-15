@@ -20,6 +20,7 @@ get '/' do
     session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
     session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
     session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
+    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name']
   end
   # if we have everything we need to query...
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
@@ -29,13 +30,28 @@ get '/' do
       'filter_type' => session[:filter_type],
       'filter_options' => session[:filter_options]
     }
+    if (session[:parent_property_name])
+      config['parent_property_name'] = session['parent_property_name']
+    end
+
+    # get all tasks
     tasks = get_notion_tasks(config)
+
+    # if the user said process subtasks, do that
+    # else, use all tasks
+    puts "About to process subtasks..."
+    if (session[:parent_property_name])
+      puts "Processing subtasks..."
+      tasks_no_subtasks = process_subtasks(tasks, config)
+    else
+      tasks_no_subtasks = tasks
+    end
   # else, things have gone wrong
   else
-    tasks = []
+    tasks_no_subtasks = []
     show_message = "Session is empty"
   end
-  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
+  erb :index, locals: { tasks: tasks_no_subtasks, show_message: show_message, filter_options: session[:filter_options] }
 end
 
 get '/complete_task/:id' do
