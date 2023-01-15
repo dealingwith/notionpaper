@@ -8,10 +8,11 @@ use Rack::Session::Pool
 get '/' do
   return params[:error] if params[:error]
   # if filter_options was passed in, use that
-  if (params[:filter_options])
-    session[:filter_options] = params[:filter_options].split(',')
+  if (params[:parent_property_name] != '')
+    session[:parent_property_name] = params[:parent_property_name]
+  end
   # if everything is stored in session, we'll use that
-  elsif (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
+  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
   # try grabbing data out of the config
   elsif (defined?(CONFIG))
@@ -104,4 +105,11 @@ get '/config_filter/?' do
   chosen_database = session[:databases_list].find { |db| db[:id] == session[:db_id] }
   filter_options = chosen_database[:filter_properties].find { |prop| prop[:name] == filter_property }[:options]
   erb :config_filter, locals: { filter_options: filter_options }
+end
+
+get '/config_subtasks/?' do
+  if (params[:filter_options])
+    session[:filter_options] = params[:filter_options].split(',')
+  end
+  erb :config_subtasks
 end
