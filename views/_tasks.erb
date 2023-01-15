@@ -10,6 +10,20 @@
         <!-- <input type="checkbox" onClick="completeTask('<%= task_id %>')"> -->
         &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
         <!-- <a href="/complete_task/<%= task_id %>">mark as completed</a> -->
+        <% unless task[:subtasks].nil? %>
+          <ul>
+            <% task[:subtasks].each do |subtask| %>
+              <% subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text') %>
+              <% next if subtask_title.nil? %>
+              <% subtask_title.strip! %>
+              <% subtask_id = subtask['id'].tr("-", "") %>
+              <% subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask_id}" %>
+              <li>
+                &#9634; <a href="<%= subtask_url %>" target="_blank"><%= subtask_title %></a>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
       </li>
     <% end %>
   </ul>
@@ -20,11 +34,17 @@
     padding: 0;
     margin: 0;
   }
-  li {
+  li:not(:last-child) {
     border-bottom: 1px solid #e9e9e9;
+    padding-bottom: 10px;
+  }
+  li {
+    padding-top: 10px;
     list-style: none;
     margin: 5px;
-    padding: 10px;
+  }
+  ul li ul li {
+    margin-left: 20px;
   }
   li a {
     color: #000;
