@@ -8,10 +8,11 @@ use Rack::Session::Pool
 get '/' do
   return params[:error] if params[:error]
   # if filter_options was passed in, use that
-  if (params[:filter_options])
-    session[:filter_options] = params[:filter_options].split(',')
+  if (params[:parent_property_name] != '')
+    session[:parent_property_name] = params[:parent_property_name]
+  end
   # if everything is stored in session, we'll use that
-  elsif (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
+  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
   # try grabbing data out of the config
   elsif (defined?(CONFIG))
@@ -20,6 +21,7 @@ get '/' do
     session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
     session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
     session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
+    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name']
   end
   # if we have everything we need to query...
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
@@ -29,13 +31,26 @@ get '/' do
       'filter_type' => session[:filter_type],
       'filter_options' => session[:filter_options]
     }
+    if (session[:parent_property_name])
+      config['parent_property_name'] = session['parent_property_name']
+    end
+
+    # get all tasks
     tasks = get_notion_tasks(config)
+
+    # if the user said process subtasks, do that
+    # else, use all tasks
+    if (session[:parent_property_name])
+      tasks_no_subtasks = process_subtasks(tasks, config)
+    else
+      tasks_no_subtasks = tasks
+    end
   # else, things have gone wrong
   else
-    tasks = []
+    tasks_no_subtasks = []
     show_message = "Session is empty"
   end
-  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
+  erb :index, locals: { tasks: tasks_no_subtasks, show_message: show_message, filter_options: session[:filter_options] }
 end
 
 get '/complete_task/:id' do
@@ -88,4 +103,11 @@ get '/config_filter/?' do
   chosen_database = session[:databases_list].find { |db| db[:id] == session[:db_id] }
   filter_options = chosen_database[:filter_properties].find { |prop| prop[:name] == filter_property }[:options]
   erb :config_filter, locals: { filter_options: filter_options }
+end
+
+get '/config_subtasks/?' do
+  if (params[:filter_options])
+    session[:filter_options] = params[:filter_options].split(',')
+  end
+  erb :config_subtasks
 end

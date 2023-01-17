@@ -11,6 +11,7 @@
 require 'erb'
 require 'pdfkit'
 require './notionpaper'
+require "awesome_print"
 load 'config.rb'
 
 def cli_prompt_for_config_values()
@@ -42,15 +43,24 @@ def cli_prompt_for_config_values()
     print "Enter the number(s) of the option(s) you want to use (separated by spaces): "
     chosen_filter_options = gets.split.map {|option_index| chosen_filter_property[:options][option_index.to_i][:name]}
   end
+  print "Process subtasks? (y/n): "
+  process_subtasks = gets.chomp.downcase
+  if process_subtasks == 'y'
+    print "What is your parent task property name (e.g. 'Parent Task')? "
+    parent_property_name = gets.chomp
+  else
+    parent_property_name = nil
+  end
   return {
     'db_id' => chosen_database[:id],
     'chosen_filter_property_name' => chosen_filter_property[:name],
     'filter_type' => chosen_filter_property[:type],
-    'filter_options' => chosen_filter_options
+    'filter_options' => chosen_filter_options,
+    'parent_property_name' => parent_property_name
   }
 end
 
-if ARGV[0] && ARGV[0] == '--use-config'
+if (ARGV[0] && ARGV[0] == '--use-config')
   use_config = true
 else
   print "Use values in config file? (y/n): "
@@ -64,19 +74,39 @@ else
   config = cli_prompt_for_config_values()
 end
 
+# get all tasks
 tasks = get_notion_tasks(config)
+
+# if the user said process subtasks, do that
+# else, use all tasks
+if (config['parent_property_name'])
+  puts "Processing subtasks..."
+  tasks_no_subtasks = process_subtasks(tasks, config)
+else
+  tasks_no_subtasks = tasks
+end
 
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
-tasks.each do |task|
+tasks_no_subtasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
   next if title.nil?
   title.strip!
   url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
   taskpaper_content << "- #{title}\n"
-  taskpaper_content << "  #{url}\n"
+  # adding the URL to the taskpaper output gets noisy, especially when there are subtasks, so we're just commenting this out for now
+  # taskpaper_content << "  #{url}\n"
   markdown_content << "- [ ] [#{title}](#{url})\n"
+  # create a sub-list of subtasks
+  unless task[:subtasks].nil?
+    task[:subtasks].each do |subtask|
+      subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+      subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
+      taskpaper_content << "  - #{subtask_title}\n"
+      markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
+    end
+  end
 end
 
 File.write 'notion.taskpaper', taskpaper_content

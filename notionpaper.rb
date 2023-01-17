@@ -19,7 +19,7 @@ class NotionPaper
     filter_options = []
     query = {"filter": {"value": "database", "property": "object"}}
     @notion.search(query) do |db|
-      # File.write 'db.json', JSON.pretty_generate(db)
+      File.write 'db.json', JSON.pretty_generate(db)
       db[:results].each do |database|
         if (database[:title]&.first&.dig('plain_text'))
           db_obj = {
@@ -118,4 +118,37 @@ def get_notion_tasks(config=nil)
   end
 
   return tasks
+end
+
+def process_subtasks(tasks, config)
+  return tasks unless config['parent_property_name']
+
+  subtasks = []
+
+  tasks_no_subtasks = tasks.map do |task|
+    task[:subtasks] = []
+    task
+  end
+  tasks.each do |task|
+    if (!task.dig('properties', config['parent_property_name'], 'relation')&.length&.zero?)
+      # this is a subtask
+      subtasks << task
+      tasks_no_subtasks.delete_if { |t| t[:id] == task[:id] }
+    end
+  end
+
+  # File.write 'tasks.json', JSON.pretty_generate(tasks)
+  # File.write 'tasks_no_subtasks.json', JSON.pretty_generate(tasks_no_subtasks)
+  # File.write 'subtasks.json', JSON.pretty_generate(subtasks)
+
+  # mutate tasks to add subtasks to parent tasks
+  subtasks.each do |subtask|
+    tasks_no_subtasks.each do |task|
+      if (task[:id] == subtask.dig('properties', config['parent_property_name'], 'relation', 0, 'id'))
+        task[:subtasks] << subtask
+      end
+    end
+  end
+
+  return tasks_no_subtasks
 end

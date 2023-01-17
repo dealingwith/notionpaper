@@ -11,3 +11,7 @@ databases.rb
 .DS_Store
 .bundle
 vendor
+db.json
+subtasks.json
+tasks_no_subtasks.json
+tasks.json
