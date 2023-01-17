@@ -40,9 +40,7 @@ get '/' do
 
     # if the user said process subtasks, do that
     # else, use all tasks
-    puts "About to process subtasks..."
     if (session[:parent_property_name])
-      puts "Processing subtasks..."
       tasks_no_subtasks = process_subtasks(tasks, config)
     else
       tasks_no_subtasks = tasks
