@@ -53,7 +53,7 @@ class NotionPaper
       if (filter.nil?)
         return @notion.database_query(database_id: db_id)
       else
-        @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
+        return @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
       end
     rescue => exception
       puts exception
