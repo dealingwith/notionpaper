@@ -74,7 +74,7 @@ end
 if (use_config && defined?(CONFIG) && CONFIG)
   config = CONFIG
 else
-  if (!defined?(CONFIG)) 
+  if (use_config && (!defined?(CONFIG) || !CONFIG)) 
     puts "No `CONFIG` found in config file."
   end
   config = cli_prompt_for_config_values()
