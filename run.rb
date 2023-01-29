@@ -71,9 +71,12 @@ else
   use_config = (answer == 'y' || answer == 'Y')
 end
 
-if (use_config && CONFIG)
+if (use_config && defined?(CONFIG) && CONFIG)
   config = CONFIG
 else
+  if (!defined?(CONFIG)) 
+    puts "No `CONFIG` found in config file."
+  end
   config = cli_prompt_for_config_values()
 end
 
