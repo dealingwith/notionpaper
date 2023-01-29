@@ -89,22 +89,22 @@ def get_notion_tasks(config=nil)
   end
 
   if !chosen_filter_property_name.nil? && !filter_options.nil?
-      subquery = []
-      filter_options.each { |option|
-        subquery << {
-          :property => chosen_filter_property_name,
-          filter_type.to_sym => { equals: option }
-        }
+    subquery = []
+    filter_options.each { |option|
+      subquery << {
+        :property => chosen_filter_property_name,
+        filter_type.to_sym => { equals: option }
       }
-      filter = {
-        "or": subquery
+    }
+    filter = {
+      "or": subquery
+    }
+    sorts = [
+      {
+        "property": chosen_filter_property_name,
+        "direction": "descending"
       }
-      sorts = [
-        {
-          "property": chosen_filter_property_name,
-          "direction": "descending"
-        }
-      ]
+    ]
   else
     filter = nil
     sorts = nil
