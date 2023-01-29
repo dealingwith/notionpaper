@@ -97,9 +97,9 @@ markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
 tasks_no_subtasks.each do |task|
   title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
-  next if title.nil?
-  title.strip!
-  url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"
+  title&.strip!
+  title = "Untitled" if title.nil?
+  url = "#{NOTION_BASE_URL}#{title&.tr(" ", "-")}-#{task['id'].tr("-", "")}"
   taskpaper_content << "- #{title}\n"
   # adding the URL to the taskpaper output gets noisy, especially when there are subtasks, so we're just commenting this out for now
   # taskpaper_content << "  #{url}\n"
@@ -108,7 +108,9 @@ tasks_no_subtasks.each do |task|
   unless task[:subtasks].nil?
     task[:subtasks].each do |subtask|
       subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
-      subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
+      subtask_title&.strip!
+      subtask_title = "Untitled" if subtask_title.nil?
+      subtask_url = "#{NOTION_BASE_URL}#{subtask_title&.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
       taskpaper_content << "  - #{subtask_title}\n"
       markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
     end
