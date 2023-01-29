@@ -34,8 +34,11 @@ def cli_prompt_for_config_values()
   properties.each_with_index { |prop, index| puts "#{index}: #{prop[:name]}" }
   print "Enter the number of the property you want to use: "
   chosen_filter = gets.chomp
-  chosen_filter_property = properties[chosen_filter.to_i]
-  unless chosen_filter == 'N'
+  if chosen_filter == 'N'
+    chosen_filter_property = nil
+    chosen_filter_options = nil
+  else
+    chosen_filter_property = properties[chosen_filter.to_i]
     # present the options for the chosen property to filter by
     # see https://developers.notion.com/reference/post-database-query-filter
     puts "** Choose option(s) for the property to filter by"
@@ -53,8 +56,8 @@ def cli_prompt_for_config_values()
   end
   return {
     'db_id' => chosen_database[:id],
-    'chosen_filter_property_name' => chosen_filter_property[:name],
-    'filter_type' => chosen_filter_property[:type],
+    'chosen_filter_property_name' => chosen_filter_property&.[](:name),
+    'filter_type' => chosen_filter_property&.[](:type),
     'filter_options' => chosen_filter_options,
     'parent_property_name' => parent_property_name
   }
