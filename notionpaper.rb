@@ -50,7 +50,11 @@ class NotionPaper
 
   def run_notion_query(db_id, sorts, filter)
     begin
-      @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
+      if (filter.nil?)
+        return @notion.database_query(database_id: db_id)
+      else
+        @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
+      end
     rescue => exception
       puts exception
       return false
@@ -84,8 +88,7 @@ def get_notion_tasks(config=nil)
     return
   end
 
-  if !chosen_filter_property_name.nil?
-    if !filter_options.nil?
+  if !chosen_filter_property_name.nil? && !filter_options.nil?
       subquery = []
       filter_options.each { |option|
         subquery << {
@@ -96,19 +99,19 @@ def get_notion_tasks(config=nil)
       filter = {
         "or": subquery
       }
-    else
-      filter = { }
-    end
+      sorts = [
+        {
+          "property": chosen_filter_property_name,
+          "direction": "descending"
+        }
+      ]
   else
-    filter = { }
+    filter = nil
+    sorts = nil
   end
-  sorts = [
-    {
-        "property": chosen_filter_property_name,
-        "direction": "descending"
-    }
-  ]
+
   results = notionpaper.run_notion_query(db_id, sorts, filter)
+
   File.write 'results.json', JSON.pretty_generate(results)
 
   if results
