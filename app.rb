@@ -109,3 +109,73 @@ get '/config_subtasks/?' do
   end
   erb :config_subtasks
 end
+
+get '/download_taskpaper' do
+  session_id = session.id # session[:session_id]
+  taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+
+  # THIS IS ALL COPY PASTA FROM "/" ROUTE
+  # ABSTRACT THIS OUT
+
+  # get all tasks
+  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
+    show_message = "Using values from session"
+  # try grabbing data out of the config
+  elsif (defined?(CONFIG))
+    show_message = "Using values from config.rb and/or session"
+    session[:db_id] = session[:db_id] || CONFIG['db_id']
+    session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
+    session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
+    session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
+    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name']
+  end
+  # if we have everything we need to query...
+  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
+    config = {
+      'db_id' => session[:db_id],
+      'chosen_filter_property_name' => session[:filter_property],
+      'filter_type' => session[:filter_type],
+      'filter_options' => session[:filter_options]
+    }
+    if (session[:parent_property_name])
+      config['parent_property_name'] = session['parent_property_name']
+    end
+
+    # get all tasks
+    tasks = get_notion_tasks(config)
+  end
+
+  # if the user said process subtasks, do that
+  # else, use all tasks
+  if (session[:parent_property_name])
+    tasks_no_subtasks = process_subtasks(tasks, config)
+  else
+    tasks_no_subtasks = tasks
+  end
+
+  # THIS IS ALL COPY PASTA FROM run.rb
+  # ABSTRACT THIS OUT
+
+  # convert to taskpaper
+  tasks_no_subtasks.each do |task|
+    title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+    title&.strip!
+    title = "Untitled" if title.nil?
+    taskpaper_content << "- #{title}\n"
+    unless task[:subtasks].nil?
+      task[:subtasks].each do |subtask|
+        subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+        subtask_title&.strip!
+        subtask_title = "Untitled" if subtask_title.nil?
+        taskpaper_content << "  - #{subtask_title}\n"
+      end
+    end
+  end
+
+  # END OF COPY PASTA
+
+  Tempfile.open("#{session_id}_tasksheet.taskpaper", "/tmp/") do |f|
+    f.write(taskpaper_content)
+    send_file(f.path, :filename => "tasksheet.taskpaper")
+  end
+end
