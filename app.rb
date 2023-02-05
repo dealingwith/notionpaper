@@ -7,11 +7,9 @@ use Rack::Session::Pool
 
 get '/' do
   return params[:error] if params[:error]
-  # if filter_options was passed in, use that
-  if (params[:parent_property_name] != '')
-    session[:parent_property_name] = params[:parent_property_name]
-  end
-  # if everything is stored in session, we'll use that
+  # last config screen was subtasks, so we'll store that in session
+  session[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
+  # if everything else is stored in session, we'll use that
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
   # try grabbing data out of the config
