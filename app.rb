@@ -6,49 +6,14 @@ require './notionpaper'
 use Rack::Session::Pool
 
 get '/' do
-  return params[:error] if params[:error]
   # last config screen was subtasks, so we'll store that in session
-  session[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
-  # if everything else is stored in session, we'll use that
-  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
-    show_message = "Using values from session"
-  # try grabbing data out of the config
-  elsif (defined?(CONFIG))
-    show_message = "Using values from config.rb and/or session"
-    session[:db_id] = session[:db_id] || CONFIG['db_id']
-    session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
-    session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
-    session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
-    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name']
+  if (params[:parent_property_name])
+    session[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
   end
-  # if we have everything we need to query...
-  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
-    config = {
-      'db_id' => session[:db_id],
-      'chosen_filter_property_name' => session[:filter_property],
-      'filter_type' => session[:filter_type],
-      'filter_options' => session[:filter_options]
-    }
-    if (session[:parent_property_name])
-      config['parent_property_name'] = session['parent_property_name']
-    end
 
-    # get all tasks
-    tasks = get_notion_tasks(config)
+  tasks, show_message = get_tasks
 
-    # if the user said process subtasks, do that
-    # else, use all tasks
-    if (session[:parent_property_name])
-      tasks_no_subtasks = process_subtasks(tasks, config)
-    else
-      tasks_no_subtasks = tasks
-    end
-  # else, things have gone wrong
-  else
-    tasks_no_subtasks = []
-    show_message = "Session is empty"
-  end
-  erb :index, locals: { tasks: tasks_no_subtasks, show_message: show_message, filter_options: session[:filter_options] }
+  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
 end
 
 get '/complete_task/:id' do
@@ -113,21 +78,32 @@ end
 get '/download_taskpaper' do
   session_id = session.id # session[:session_id]
 
-  # THIS IS ALL COPY PASTA FROM "/" ROUTE
-  # ABSTRACT THIS OUT
+  tasks, _ = get_tasks
 
-  # get all tasks
+  # convert to taskpaper
+  taskpaper_content = convert_to_taskpaper(tasks)
+
+  Tempfile.open("#{session_id}_tasksheet.taskpaper", "/tmp/") do |f|
+    f.write(taskpaper_content)
+    f.rewind
+    send_file(f.path, :filename => "tasksheet.taskpaper")
+  end
+end
+
+def get_tasks
+  # if everything required is stored in session, we'll use that
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
-  # try grabbing data out of the config
+  # else try grabbing data out of the config
   elsif (defined?(CONFIG))
     show_message = "Using values from config.rb and/or session"
     session[:db_id] = session[:db_id] || CONFIG['db_id']
     session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
     session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
     session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
-    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name']
+    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name'] || nil
   end
+
   # if we have everything we need to query...
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     config = {
@@ -142,22 +118,18 @@ get '/download_taskpaper' do
 
     # get all tasks
     tasks = get_notion_tasks(config)
-  end
 
-  # if the user said process subtasks, do that
-  # else, use all tasks
-  if (session[:parent_property_name])
-    tasks_no_subtasks = process_subtasks(tasks, config)
+    # if the user said process subtasks, do that
+    # else use all tasks
+    if (session[:parent_property_name])
+      tasks_no_subtasks = process_subtasks(tasks, config)
+    else
+      tasks_no_subtasks = tasks
+    end
+  # else, things have gone wrong
   else
-    tasks_no_subtasks = tasks
+    tasks_no_subtasks = []
+    show_message = "Session is empty"
   end
-
-  # convert to taskpaper
-  taskpaper_content = convert_to_taskpaper(tasks_no_subtasks)
-
-  Tempfile.open("#{session_id}_tasksheet.taskpaper", "/tmp/") do |f|
-    f.write(taskpaper_content)
-    f.rewind
-    send_file(f.path, :filename => "tasksheet.taskpaper")
-  end
+  [tasks_no_subtasks, show_message]
 end
