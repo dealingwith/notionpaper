@@ -155,3 +155,24 @@ def process_subtasks(tasks, config)
 
   return tasks_no_subtasks
 end
+
+def convert_to_taskpaper(tasks_no_subtasks) 
+  taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+
+  tasks_no_subtasks.each do |task|
+    title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+    title&.strip!
+    title = "Untitled" if title.nil?
+    taskpaper_content << "- #{title}\n"
+    unless task[:subtasks].nil?
+      task[:subtasks].each do |subtask|
+        subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+        subtask_title&.strip!
+        subtask_title = "Untitled" if subtask_title.nil?
+        taskpaper_content << "  - #{subtask_title}\n"
+      end
+    end
+  end
+
+  return taskpaper_content
+end
