@@ -13,10 +13,12 @@
   </div>
 </details>
 
-<div id="output-actions">
-  <p class="no-print"><a href="#" onClick="window.print()">Print</a></p>
-  <p class="no-print"><a href="/download_taskpaper">Download tasksheet.taskpaper</a></p>
-</div>
+<% if tasks.length > 0 %>
+  <div id="output-actions">
+    <p class="no-print"><a href="#" onClick="window.print()">Print</a></p>
+    <p class="no-print"><a href="/download_taskpaper">Download tasksheet.taskpaper</a></p>
+  </div>
+<% end %>
 
 <div class="tasks">
   <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks, filter_options: filter_options } %>
