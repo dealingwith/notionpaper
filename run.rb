@@ -92,33 +92,34 @@ else
   tasks_no_subtasks = tasks
 end
 
-taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
-tasks_no_subtasks.each do |task|
-  title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
-  title&.strip!
-  title = "Untitled" if title.nil?
-  url = "#{NOTION_BASE_URL}#{title&.tr(" ", "-")}-#{task['id'].tr("-", "")}"
-  taskpaper_content << "- #{title}\n"
-  # adding the URL to the taskpaper output gets noisy, especially when there are subtasks, so we're just commenting this out for now
-  # taskpaper_content << "  #{url}\n"
-  markdown_content << "- [ ] [#{title}](#{url})\n"
-  # create a sub-list of subtasks
-  unless task[:subtasks].nil?
-    task[:subtasks].each do |subtask|
-      subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
-      subtask_title&.strip!
-      subtask_title = "Untitled" if subtask_title.nil?
-      subtask_url = "#{NOTION_BASE_URL}#{subtask_title&.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
-      taskpaper_content << "  - #{subtask_title}\n"
-      markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
-    end
-  end
-end
+taskpaper_content = convert_to_taskpaper(tasks_no_subtasks)
+
+#tasks_no_subtasks.each do |task|
+#  title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+#  title&.strip!
+#  title = "Untitled" if title.nil?
+#  url = "#{NOTION_BASE_URL}#{title&.tr(" ", "-")}-#{task['id'].tr("-", "")}"
+#  taskpaper_content << "- #{title}\n"
+#  # adding the URL to the taskpaper output gets noisy, especially when there are subtasks, so we're just commenting this out for now
+#  # taskpaper_content << "  #{url}\n"
+#  markdown_content << "- [ ] [#{title}](#{url})\n"
+#  # create a sub-list of subtasks
+#  unless task[:subtasks].nil?
+#    task[:subtasks].each do |subtask|
+#      subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+#      subtask_title&.strip!
+#      subtask_title = "Untitled" if subtask_title.nil?
+#      subtask_url = "#{NOTION_BASE_URL}#{subtask_title&.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
+#      taskpaper_content << "  - #{subtask_title}\n"
+#      markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
+#    end
+#  end
+#end
 
 File.write 'notion.taskpaper', taskpaper_content
-File.write 'notion.markdown', markdown_content
+#File.write 'notion.markdown', markdown_content
 html_content = ERB.new(File.read('views/_tasks.erb')).result(binding)
 File.write 'notion.html', html_content
 PDFKit.new(html_content).to_file("notion.pdf")

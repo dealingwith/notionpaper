@@ -112,7 +112,6 @@ end
 
 get '/download_taskpaper' do
   session_id = session.id # session[:session_id]
-  taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
   # THIS IS ALL COPY PASTA FROM "/" ROUTE
   # ABSTRACT THIS OUT
@@ -153,29 +152,12 @@ get '/download_taskpaper' do
     tasks_no_subtasks = tasks
   end
 
-  # THIS IS ALL COPY PASTA FROM run.rb
-  # ABSTRACT THIS OUT
-
   # convert to taskpaper
-  tasks_no_subtasks.each do |task|
-    title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
-    title&.strip!
-    title = "Untitled" if title.nil?
-    taskpaper_content << "- #{title}\n"
-    unless task[:subtasks].nil?
-      task[:subtasks].each do |subtask|
-        subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
-        subtask_title&.strip!
-        subtask_title = "Untitled" if subtask_title.nil?
-        taskpaper_content << "  - #{subtask_title}\n"
-      end
-    end
-  end
-
-  # END OF COPY PASTA
+  taskpaper_content = convert_to_taskpaper(tasks_no_subtasks)
 
   Tempfile.open("#{session_id}_tasksheet.taskpaper", "/tmp/") do |f|
     f.write(taskpaper_content)
+    f.rewind
     send_file(f.path, :filename => "tasksheet.taskpaper")
   end
 end
