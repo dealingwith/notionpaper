@@ -92,27 +92,8 @@ else
   tasks_no_subtasks = tasks
 end
 
-markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
-
 taskpaper_content = convert_to_taskpaper(tasks_no_subtasks)
-
-tasks_no_subtasks.each do |task|
- title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
- title&.strip!
- title = "Untitled" if title.nil?
- url = "#{NOTION_BASE_URL}#{title&.tr(" ", "-")}-#{task['id'].tr("-", "")}"
- markdown_content << "- [ ] [#{title}](#{url})\n"
- # create a sub-list of subtasks
- unless task[:subtasks].nil?
-   task[:subtasks].each do |subtask|
-     subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
-     subtask_title&.strip!
-     subtask_title = "Untitled" if subtask_title.nil?
-     subtask_url = "#{NOTION_BASE_URL}#{subtask_title&.tr(" ", "-")}-#{subtask['id'].tr("-", "")}"
-     markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
-   end
- end
-end
+markdown_content = convert_to_markdown(tasks_no_subtasks)
 
 File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
