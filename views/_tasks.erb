@@ -2,22 +2,18 @@
   <ul>
     <% tasks.each do |task| %>
       <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
-      <% next if title.nil? %>
-      <% title.strip! %>
-      <% task_id = task['id'].tr("-", "") %>
-      <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task_id}" %>
+      <% title&.strip! %>
+      <% title = "Untitled" if title.nil? %>
+      <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}" %>
       <li>
-        <!-- <input type="checkbox" onClick="completeTask('<%= task_id %>')"> -->
         &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
-        <!-- <a href="/complete_task/<%= task_id %>">mark as completed</a> -->
         <% unless task[:subtasks].nil? %>
           <ul>
             <% task[:subtasks].each do |subtask| %>
               <% subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text') %>
-              <% next if subtask_title.nil? %>
-              <% subtask_title.strip! %>
-              <% subtask_id = subtask['id'].tr("-", "") %>
-              <% subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask_id}" %>
+              <% subtask_title&.strip! %>
+              <% subtask_title = "Untitled" if subtask_title.nil? %>
+              <% subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}" %>
               <li>
                 &#9634; <a href="<%= subtask_url %>" target="_blank"><%= subtask_title %></a>
               </li>
