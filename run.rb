@@ -82,18 +82,10 @@ end
 
 # get all tasks
 tasks = get_notion_tasks(config)
+tasks = process_subtasks(tasks, config)
 
-# if the user said process subtasks, do that
-# else, use all tasks
-if (config['parent_property_name'])
-  puts "Processing subtasks..."
-  tasks_no_subtasks = process_subtasks(tasks, config)
-else
-  tasks_no_subtasks = tasks
-end
-
-taskpaper_content = convert_to_taskpaper(tasks_no_subtasks)
-markdown_content = convert_to_markdown(tasks_no_subtasks)
+taskpaper_content = convert_to_taskpaper(tasks)
+markdown_content = convert_to_markdown(tasks)
 
 File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
