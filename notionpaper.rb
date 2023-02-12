@@ -201,3 +201,15 @@ def convert_to_taskpaper(tasks_no_subtasks)
 
   return taskpaper_content
 end
+
+def convert_to_csv(tasks)
+  tasks.each do |task|
+    title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+    title&.strip!
+    title = "Untitled" if title.nil?
+    csv_content << "#{title}\n"
+    
+  end
+
+  return csv_content
+end

@@ -3,6 +3,7 @@ require 'erb'
 require 'pdfkit'
 require 'awesome_print'
 require 'sinatra'
+require 'csv'
 require './notionpaper'
 
 use Rack::Session::Pool
@@ -107,6 +108,7 @@ get '/download_taskpaper' do
   end
 end
 
+<<<<<<< HEAD
 get '/download_pdf' do
   session_id = session.id # session[:session_id]
 
@@ -122,6 +124,26 @@ get '/download_pdf' do
 end
 
 def get_tasks
+=======
+get '/download_csv' do
+  tasks, _ = get_tasks(false)
+  temp_file = Tempfile.new('tasksheet.csv')
+
+  CSV.open(temp_file, "w") do |csv|
+    csv << ['Task', 'URL']
+    tasks.each do |task|
+      title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+      title&.strip!
+      title = 'Untitled' if title.nil? || title == ''
+      csv << [title, "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"]
+    end
+  end
+
+  send_file(temp_file.path, :filename => "tasksheet.csv")
+end
+
+def get_tasks(process_subtasks = true)
+>>>>>>> a1d38e2 (create CSV download)
   # if everything required is stored in session, we'll use that
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
@@ -149,18 +171,11 @@ def get_tasks
 
     # get all tasks
     tasks = get_notion_tasks(config)
-
-    # if the user said process subtasks, do that
-    # else use all tasks
-    if (session[:parent_property_name])
-      tasks_no_subtasks = process_subtasks(tasks, config)
-    else
-      tasks_no_subtasks = tasks
-    end
+    tasks = process_subtasks(tasks, config) if process_subtasks
   # else, things have gone wrong
   else
-    tasks_no_subtasks = []
+    tasks = []
     show_message = "Session is empty"
   end
-  [tasks_no_subtasks, show_message]
+  [tasks, show_message]
 end
