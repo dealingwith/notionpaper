@@ -1,4 +1,6 @@
 load 'config.rb'
+require 'erb'
+require 'pdfkit'
 require 'awesome_print'
 require 'sinatra'
 require './notionpaper'
@@ -102,6 +104,20 @@ get '/download_taskpaper' do
     f.write(taskpaper_content)
     f.rewind
     send_file(f.path, :filename => "tasksheet.taskpaper")
+  end
+end
+
+get '/download_pdf' do
+  session_id = session.id # session[:session_id]
+
+  tasks, _ = get_tasks
+
+  pdf_content = PDFKit.new(ERB.new(File.read('views/_tasks.erb')).result(binding)).to_pdf
+
+  Tempfile.open("#{session_id}_tasksheet.pdf", "/tmp/") do |f|
+    f.write(pdf_content)
+    f.rewind
+    send_file(f.path, :filename => "tasksheet.pdf")
   end
 end
 
