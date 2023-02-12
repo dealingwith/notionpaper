@@ -108,7 +108,6 @@ get '/download_taskpaper' do
   end
 end
 
-<<<<<<< HEAD
 get '/download_pdf' do
   session_id = session.id # session[:session_id]
 
@@ -123,8 +122,20 @@ get '/download_pdf' do
   end
 end
 
-def get_tasks
-=======
+get '/download_pdf' do
+  session_id = session.id # session[:session_id]
+
+  tasks, _ = get_tasks
+
+  pdf_content = PDFKit.new(ERB.new(File.read('views/_tasks.erb')).result(binding)).to_pdf
+
+  Tempfile.open("#{session_id}_tasksheet.pdf", "/tmp/") do |f|
+    f.write(pdf_content)
+    f.rewind
+    send_file(f.path, :filename => "tasksheet.pdf")
+  end
+end
+
 get '/download_csv' do
   tasks, _ = get_tasks(false)
   temp_file = Tempfile.new('tasksheet.csv')
@@ -143,7 +154,6 @@ get '/download_csv' do
 end
 
 def get_tasks(process_subtasks = true)
->>>>>>> a1d38e2 (create CSV download)
   # if everything required is stored in session, we'll use that
   if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
     show_message = "Using values from session"
