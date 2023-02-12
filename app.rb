@@ -75,6 +75,21 @@ get '/config_subtasks/?' do
   erb :config_subtasks
 end
 
+get '/download_markdown' do
+  session_id = session.id # session[:session_id]
+
+  tasks, _ = get_tasks
+
+  # convert to markdown
+  markdown_content = convert_to_markdown(tasks)
+
+  Tempfile.open("#{session_id}_tasksheet.markdown", "/tmp/") do |f|
+    f.write(markdown_content)
+    f.rewind
+    send_file(f.path, :filename => "tasksheet.markdown")
+  end
+end
+
 get '/download_taskpaper' do
   session_id = session.id # session[:session_id]
 
