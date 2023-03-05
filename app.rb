@@ -4,13 +4,37 @@ require 'pdfkit'
 require 'awesome_print'
 require 'sinatra'
 require 'csv'
+require "net/http"
+require "uri"
 require './notionpaper'
 
 use Rack::Session::Pool
 
 get '/' do
+  # if we're getting a `code` param, we're coming back from Notion auth
+  if (params&.[](:code))
+
+    puts "-----------------"
+    puts "We're back from Notion auth!"
+
+    uri = URI.parse("https://api.notion.com/v1/oauth/token")
+    notion_params = {"grant_type" => "authorization_code", "code" => params[:code]}
+    headers = {
+      'Content-Type' =>'application/json',
+      'Accept'=>'application/json'
+    }
+    
+    http = Net::HTTP.new(uri.host, uri.port)
+    response = http.post(uri.path, notion_params.to_json, headers)
+
+    ap response
+    ap response.body
+    puts "-----------------"
+
+  end
+
   # last config screen was subtasks, so we'll store that in session
-  if (params[:parent_property_name])
+  if (params&.[](:parent_property_name))
     session[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
   end
 
