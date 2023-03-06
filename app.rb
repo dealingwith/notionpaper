@@ -4,35 +4,12 @@ require 'pdfkit'
 require 'awesome_print'
 require 'sinatra'
 require 'csv'
-require "net/http"
-require "uri"
+require 'faraday'
 require './notionpaper'
 
 use Rack::Session::Pool
 
 get '/' do
-  # if we're getting a `code` param, we're coming back from Notion auth
-  if (params&.[](:code))
-
-    puts "-----------------"
-    puts "We're back from Notion auth!"
-
-    uri = URI.parse("https://api.notion.com/v1/oauth/token")
-    notion_params = {"grant_type" => "authorization_code", "code" => params[:code]}
-    headers = {
-      'Content-Type' =>'application/json',
-      'Accept'=>'application/json'
-    }
-    
-    http = Net::HTTP.new(uri.host, uri.port)
-    response = http.post(uri.path, notion_params.to_json, headers)
-
-    ap response
-    ap response.body
-    puts "-----------------"
-
-  end
-
   # last config screen was subtasks, so we'll store that in session
   if (params&.[](:parent_property_name))
     session[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
@@ -40,7 +17,30 @@ get '/' do
 
   tasks, show_message = get_tasks
 
-  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options] }
+  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options], ngrok_url: NGROK_URL, notion_client_id: NOTION_CLIENT_ID }
+end
+
+get '/notion_auth' do
+  puts "-----------------"
+  puts "We're back from Notion auth!"
+
+  # using Faraday
+  conn = Faraday.new(
+    url: 'https://api.notion.com/v1/oauth/token',
+    headers: {
+      'Content-Type' => 'application/json'
+    }) do |conn|
+    conn.request :authorization, :basic, NOTION_CLIENT_ID, NOTION_OAUTH_CLIENT_SECRET
+  end
+  
+  puts params[:code]
+  response = conn.post do |req|
+    req.body = {code: params[:code], grant_type: "authorization_code", redirect_uri: "#{NGROK_URL}/notion_auth"}.to_json
+  end
+
+  ap response
+  ap response.body
+  puts "-----------------"
 end
 
 get '/complete_task/:id' do
