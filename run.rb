@@ -15,7 +15,7 @@ require "awesome_print"
 load 'config.rb'
 
 def cli_prompt_for_config_values()
-  notionpaper = NotionPaper.new()
+  notionpaper = NotionPaper.new(NOTION_API_KEY)
   # prompt user for all options
   databases_list = notionpaper.get_notion_databases()
 
@@ -91,4 +91,8 @@ File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
 html_content = ERB.new(File.read('views/_tasks.erb')).result(binding)
 File.write 'notion.html', html_content
-PDFKit.new(html_content).to_file("notion.pdf")
+begin
+  PDFKit.new(html_content).to_file("notion.pdf")
+rescue Exception
+  puts "PDF generation failed"
+end
