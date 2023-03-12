@@ -76,7 +76,7 @@ class NotionPaper
 end
 
 def get_notion_tasks(config=nil, session=nil)
-  if (session[:notion_access_token])
+  if (session&.[](:notion_access_token))
     notionpaper = NotionPaper.new(session[:notion_access_token])
   elsif (NOTION_API_KEY)
     notionpaper = NotionPaper.new(NOTION_API_KEY)
