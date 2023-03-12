@@ -4,9 +4,9 @@ require 'awesome_print'
 class NotionPaper
   attr_reader :databases_results
 
-  def initialize()
+  def initialize(notion_api_key)
     Notion.configure do |config|
-      config.token = NOTION_API_KEY
+      config.token = notion_api_key
     end
     @notion = Notion::Client.new
   end
@@ -75,8 +75,14 @@ class NotionPaper
 
 end
 
-def get_notion_tasks(config=nil)
-  notionpaper = NotionPaper.new()
+def get_notion_tasks(config=nil, session=nil)
+  if (session[:notion_access_token])
+    notionpaper = NotionPaper.new(session[:notion_access_token])
+  elsif (NOTION_API_KEY)
+    notionpaper = NotionPaper.new(NOTION_API_KEY)
+  else
+    return
+  end
 
   if (config)
     # load database and filter configs from passed-in values

@@ -17,7 +17,13 @@ get '/' do
 
   tasks, show_message = get_tasks
 
-  erb :index, locals: { tasks: tasks, show_message: show_message, filter_options: session[:filter_options], ngrok_url: NGROK_URL, notion_client_id: NOTION_CLIENT_ID }
+  erb :index, locals: { 
+    tasks: tasks, 
+    show_message: show_message, 
+    filter_options: session[:filter_options], 
+    ngrok_url: NGROK_URL, 
+    notion_client_id: NOTION_CLIENT_ID,
+    notion_access_token: session[:notion_access_token] }
 end
 
 get '/notion_auth' do
@@ -38,9 +44,17 @@ get '/notion_auth' do
     req.body = {code: params[:code], grant_type: "authorization_code", redirect_uri: "#{NGROK_URL}/notion_auth"}.to_json
   end
 
+  session[:notion_access_token] = JSON.parse(response.body)['access_token']
+
+  puts "Access token:"
+  ap session[:notion_access_token]
+
   ap response
   ap response.body
   puts "-----------------"
+
+  puts "Redirecting to /"
+  redirect '/'
 end
 
 get '/complete_task/:id' do
@@ -76,7 +90,7 @@ get '/api/complete_task/:id' do
 end
 
 get '/config_database/?' do
-  notionpaper = NotionPaper.new()
+  notionpaper = NotionPaper.new(session[:notion_access_token])
   session[:databases_list] = notionpaper.get_notion_databases()
   erb :config_database, locals: { databases_list: session[:databases_list] }
 end
@@ -190,7 +204,7 @@ def get_tasks(do_subtasks = true)
     end
 
     # get all tasks
-    tasks = get_notion_tasks(config)
+    tasks = get_notion_tasks(config, session)
     tasks = process_subtasks(tasks, config) if do_subtasks
   else #things have gone wrong
     tasks = []
