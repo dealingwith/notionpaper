@@ -19,7 +19,7 @@ end
 
 # this magically allows sessions to persist across server restarts
 configure do
-  set :session_secret, SESION_SECRET
+  set :session_secret, SESSION_SECRET
 end
 
 before do
