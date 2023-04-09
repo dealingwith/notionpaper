@@ -77,11 +77,13 @@ end
 
 def get_notion_tasks(config=nil, session=nil)
   if (session&.[](:notion_access_token))
+    # it came from Notion OAuth
     notionpaper = NotionPaper.new(session[:notion_access_token])
-  elsif (NOTION_API_KEY)
+  elsif (defined?(NOTION_API_KEY))
+    # it came from config.rb
     notionpaper = NotionPaper.new(NOTION_API_KEY)
   else
-    return
+    return []
   end
 
   if (config)
@@ -91,7 +93,7 @@ def get_notion_tasks(config=nil, session=nil)
     filter_type = config['filter_type']
     filter_options = config['filter_options']
   else
-    return
+    return []
   end
 
   if !chosen_filter_property_name.nil? && !filter_options.nil?

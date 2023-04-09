@@ -38,6 +38,18 @@ CONFIG = {
 
 ### To run the web app
 
+#### Using Notion OAuth
+
+Do not have NOTION_API_KEY in your `config.rb`
+
+Start [ngrok](https://ngrok.com/):
+
+`ngrok http 4567`
+
+Visit you ngrok URL to activate it
+
+Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI to you ngrok URL + `/notion_auth`
+
 `$ ruby app.rb`
 
 Go to `http://127.0.0.1:4567/`

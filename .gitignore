@@ -15,3 +15,5 @@ db.json
 subtasks.json
 tasks_no_subtasks.json
 tasks.json
+tmp/
+data/

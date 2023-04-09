@@ -7,11 +7,11 @@
 <details class="no-print" style="cursor: pointer">
   <summary>Query data</summary>
   <div style="padding: 10px 20px; background-color: #f0f0f0">
-    <p class="no-print">DB ID: <%= session[:db_id] %></p>
-    <p class="no-print">filter_property: <%= session[:filter_property] %></p>
-    <p class="no-print">filter_type: <%= session[:filter_type] %></p>
-    <p class="no-print">filter_options: <%= session[:filter_options] %></p>
-    <p class="no-print">parent_property_name: <%= session[:parent_property_name] || "Not nesting subtasks" %></p>
+    <p class="no-print">DB ID: <%= @session_data[:db_id] %></p>
+    <p class="no-print">filter_property: <%= @session_data[:filter_property] %></p>
+    <p class="no-print">filter_type: <%= @session_data[:filter_type] %></p>
+    <p class="no-print">filter_options: <%= @session_data[:filter_options] %></p>
+    <p class="no-print">parent_property_name: <%= @session_data[:parent_property_name] || "Not nesting subtasks" %></p>
   </div>
 </details>
 
@@ -37,4 +37,6 @@
   <%= erb '_tasks'.to_sym, :locals => {:tasks => tasks, filter_options: filter_options } %>
 </div>
 
-<p class="no-print"><a href="/config_database">Configure</a></p>
+<% unless notion_access_token.nil? %>
+  <p class="no-print"><a href="/config_database">Configure</a></p>
+<% end %>
