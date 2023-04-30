@@ -23,6 +23,7 @@ configure do
 end
 
 before do
+  @development = ENV['RACK_ENV'] == 'development'
   if request.get?
     # if there is a session, try to load data from Moneta store
     if (session[:session_id])
