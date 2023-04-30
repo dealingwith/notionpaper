@@ -1,4 +1,4 @@
-# Codename: Notionpaper
+# Codename: TaskSheet
 
 ## What is it?
 
@@ -8,13 +8,6 @@ It started out as a Notion tasks DB -to- Taskpaper command-line utility (prior a
 * Support basic entry manipulation (other metadata, completion states)
 
 Very much a WIP.
-
-### Other names we're thinking about
-
-* Scaper (a portmanteau of "scraper" and "paper", but too much like "landscaper"?)
-* Tasksheet (too close to Taskpaper?)
-* Todoprint (too on the nose?)
-* Listist (kind of a mouthful?)
 
 ## Quickstart
 
@@ -34,10 +27,7 @@ CONFIG = {
   'filter_type' => 'select', # or Notion's new 'status' is supported
   'filter_options' => ['In Progress', 'Priority'] # what values in that column to filter by, those are examples, could be anything
 }
-SESSION_SECRET = '[YOUR SESSION SECRET HERE]'
 ```
-
-[Genereate a session secret as describe in the Sinatra docs here](https://sinatrarb.com/intro.html#:~:text=%24%20ruby%20%2De%20%22require%20%27securerandom%27%3B%20puts%20SecureRandom.hex(64)%22).
 
 ### To run the web app
 
