@@ -1,24 +1,26 @@
 <%= erb '_head'.to_sym %>
 
 <h1>TaskSheet</h1>
-
+<h2><%= @development ? "Development" : "" %></h2>
 <p class="no-print">Message: <%= show_message %></p>
 
-<details class="no-print" style="cursor: pointer">
-  <summary>Query data</summary>
-  <div style="padding: 10px 20px; background-color: #f0f0f0">
-    <p class="no-print">DB ID: <%= @session_data[:db_id] %></p>
-    <p class="no-print">filter_property: <%= @session_data[:filter_property] %></p>
-    <p class="no-print">filter_type: <%= @session_data[:filter_type] %></p>
-    <p class="no-print">filter_options: <%= @session_data[:filter_options] %></p>
-    <p class="no-print">parent_property_name: <%= @session_data[:parent_property_name] || "Not nesting subtasks" %></p>
-  </div>
-</details>
+<% if @development %>
+  <details class="no-print" style="cursor: pointer">
+    <summary>Query data</summary>
+    <div style="padding: 10px 20px; background-color: #f0f0f0">
+      <p class="no-print">DB ID: <%= @session_data[:db_id] %></p>
+      <p class="no-print">filter_property: <%= @session_data[:filter_property] %></p>
+      <p class="no-print">filter_type: <%= @session_data[:filter_type] %></p>
+      <p class="no-print">filter_options: <%= @session_data[:filter_options] %></p>
+      <p class="no-print">parent_property_name: <%= @session_data[:parent_property_name] || "Not nesting subtasks" %></p>
+    </div>
+  </details>
+<% end %>
 
 <p>
   <% if notion_access_token.nil? %>
     <a href="https://api.notion.com/v1/oauth/authorize?client_id=<%= notion_client_id %>&response_type=code&owner=user&redirect_uri=<%= ngrok_url %>/notion_auth">Log in with Notion</a>
-  <% else %>
+  <% elsif @development %>
     We have a Notion access token!
   <% end %>
 </p>
