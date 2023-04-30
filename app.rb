@@ -5,14 +5,68 @@ require 'awesome_print'
 require 'sinatra'
 require 'csv'
 require 'faraday'
+require 'moneta'
+require 'moneta/adapters/file'
 require './notionpaper'
 
-use Rack::Session::Pool
+enable :sessions
+
+def initialize
+  super()
+  # initialize the Moneta store
+  @store = Moneta.new(:File, dir: 'data')
+end
+
+# this magically allows sessions to persist across server restarts
+configure do
+  set :session_secret, SESSION_SECRET
+end
+
+before do
+  if request.get?
+    # if there is a session, try to load data from Moneta store
+    if (session[:session_id])
+      @session_data = get_session_from_moneta
+      return
+    end
+    @session_data = {}
+  end
+end
+
+after do
+  if request.get?
+    # if there is a session, try to save data to Moneta store
+    if (session[:session_id])
+      save_session_to_moneta(@session_data)
+    end
+  end
+end
 
 get '/' do
   # last config screen was subtasks, so we'll store that in session
   if (params&.[](:parent_property_name))
-    session[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
+    @session_data[:parent_property_name] = params[:parent_property_name] == '' ? nil : params[:parent_property_name]
+  end
+
+  # if NOTION_API_KEY is defined in config.rb
+  if (defined?(NOTION_API_KEY))
+    notion_access_token = @session_data[:notion_access_token] = NOTION_API_KEY
+  else # grab the access token from the session
+    notion_access_token = @session_data[:notion_access_token] || nil
+  end
+
+  # if NOTION_CLIENT_ID is defined in config.rb
+  if (defined?(NOTION_CLIENT_ID))
+    notion_client_id = NOTION_CLIENT_ID
+  else
+    notion_client_id = nil
+  end
+
+  # if NGROK_URL is defined in config.rb
+  if (defined?(NGROK_URL))
+    ngrok_url = NGROK_URL
+  else
+    ngrok_url = nil
   end
 
   tasks, show_message = get_tasks
@@ -20,10 +74,11 @@ get '/' do
   erb :index, locals: { 
     tasks: tasks, 
     show_message: show_message, 
-    filter_options: session[:filter_options], 
-    ngrok_url: NGROK_URL, 
-    notion_client_id: NOTION_CLIENT_ID,
-    notion_access_token: session[:notion_access_token] }
+    filter_options: @session_data[:filter_options], 
+    ngrok_url: ngrok_url,
+    notion_client_id: notion_client_id,
+    notion_access_token: notion_access_token
+  }
 end
 
 get '/notion_auth' do
@@ -44,16 +99,11 @@ get '/notion_auth' do
     req.body = {code: params[:code], grant_type: "authorization_code", redirect_uri: "#{NGROK_URL}/notion_auth"}.to_json
   end
 
-  session[:notion_access_token] = JSON.parse(response.body)['access_token']
+  @session_data[:notion_access_token] = JSON.parse(response.body)['access_token']
 
   puts "Access token:"
-  ap session[:notion_access_token]
+  ap @session_data[:notion_access_token]
 
-  ap response
-  ap response.body
-  puts "-----------------"
-
-  puts "Redirecting to /"
   redirect '/'
 end
 
@@ -90,28 +140,28 @@ get '/api/complete_task/:id' do
 end
 
 get '/config_database/?' do
-  notionpaper = NotionPaper.new(session[:notion_access_token])
-  session[:databases_list] = notionpaper.get_notion_databases()
-  erb :config_database, locals: { databases_list: session[:databases_list] }
+  notionpaper = NotionPaper.new(@session_data[:notion_access_token])
+  @session_data[:databases_list] = notionpaper.get_notion_databases()
+  erb :config_database, locals: { databases_list: @session_data[:databases_list] }
 end
 
 get '/config_property/?' do
-  session[:db_id] = db_id = params[:db_id]
-  chosen_database = session[:databases_list].find { |db| db[:id] == db_id }
+  @session_data[:db_id] = db_id = params[:db_id]
+  chosen_database = @session_data[:databases_list].find { |db| db[:id] == db_id }
   erb :config_property, locals: { properties: chosen_database[:filter_properties] }
 end
 
 get '/config_filter/?' do
-  session[:filter_property] = filter_property = params[:filter_property]
-  session[:filter_type] = filter_type = params[:filter_type]
-  chosen_database = session[:databases_list].find { |db| db[:id] == session[:db_id] }
+  @session_data[:filter_property] = filter_property = params[:filter_property]
+  @session_data[:filter_type] = filter_type = params[:filter_type]
+  chosen_database = @session_data[:databases_list].find { |db| db[:id] == @session_data[:db_id] }
   filter_options = chosen_database[:filter_properties].find { |prop| prop[:name] == filter_property }[:options]
   erb :config_filter, locals: { filter_options: filter_options }
 end
 
 get '/config_subtasks/?' do
   if (params[:filter_options])
-    session[:filter_options] = params[:filter_options].split(',')
+    @session_data[:filter_options] = params[:filter_options].split(',')
   end
   erb :config_subtasks
 end
@@ -179,36 +229,53 @@ end
 
 def get_tasks(do_subtasks = true)
   # if everything required is stored in session, we'll use that
-  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
+  if (@session_data[:db_id] && @session_data[:filter_property] && @session_data[:filter_type] && @session_data[:filter_options])
     show_message = "Using values from session"
   # else try grabbing data out of the config
   elsif (defined?(CONFIG))
     show_message = "Using values from config.rb and/or session"
-    session[:db_id] = session[:db_id] || CONFIG['db_id']
-    session[:filter_property] = session[:filter_property] || CONFIG['chosen_filter_property_name']
-    session[:filter_type] = session[:filter_type] || CONFIG['filter_type']
-    session[:filter_options] = session[:filter_options] || CONFIG['filter_options']
-    session[:parent_property_name] = session[:parent_property_name] || CONFIG['parent_property_name'] || nil
+    @session_data[:db_id] = @session_data[:db_id] || CONFIG['db_id']
+    @session_data[:filter_property] = @session_data[:filter_property] || CONFIG['chosen_filter_property_name']
+    @session_data[:filter_type] = @session_data[:filter_type] || CONFIG['filter_type']
+    @session_data[:filter_options] = @session_data[:filter_options] || CONFIG['filter_options']
+    @session_data[:parent_property_name] = @session_data[:parent_property_name] || CONFIG['parent_property_name'] || nil
   end
 
   # if we have everything we need to query...
-  if (session[:db_id] && session[:filter_property] && session[:filter_type] && session[:filter_options])
+  if (@session_data[:db_id] && @session_data[:filter_property] && @session_data[:filter_type] && @session_data[:filter_options])
     config = {
-      'db_id' => session[:db_id],
-      'chosen_filter_property_name' => session[:filter_property],
-      'filter_type' => session[:filter_type],
-      'filter_options' => session[:filter_options]
+      'db_id' => @session_data[:db_id],
+      'chosen_filter_property_name' => @session_data[:filter_property],
+      'filter_type' => @session_data[:filter_type],
+      'filter_options' => @session_data[:filter_options]
     }
-    if (session[:parent_property_name])
-      config['parent_property_name'] = session['parent_property_name']
+    if (@session_data[:parent_property_name])
+      config['parent_property_name'] = @session_data[:parent_property_name]
     end
 
     # get all tasks
-    tasks = get_notion_tasks(config, session)
-    tasks = process_subtasks(tasks, config) if do_subtasks
-  else #things have gone wrong
+    tasks = get_notion_tasks(config, @session_data)
+    tasks = process_subtasks(tasks, config) if tasks && do_subtasks
+  else # things have gone wrong, or it's just the first time the user has visited the page
     tasks = []
     show_message = "Session is empty"
   end
   [tasks, show_message]
+end
+
+def save_session_to_moneta(values=nil)
+  session_data = get_session_from_moneta
+  session_data.merge!(values) if values
+
+  @store.store(session[:session_id], session_data)
+end
+
+def get_session_from_moneta
+  session_data = @store.load(session[:session_id])
+
+  if (session_data.nil?) # if we can't find the session in the store, we'll just return
+    return {}
+  end
+
+  return session_data
 end

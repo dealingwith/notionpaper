@@ -34,9 +34,24 @@ CONFIG = {
   'filter_type' => 'select', # or Notion's new 'status' is supported
   'filter_options' => ['In Progress', 'Priority'] # what values in that column to filter by, those are examples, could be anything
 }
+SESSION_SECRET = '[YOUR SESSION SECRET HERE]'
 ```
 
+[Genereate a session secret as describe in the Sinatra docs here](https://sinatrarb.com/intro.html#:~:text=%24%20ruby%20%2De%20%22require%20%27securerandom%27%3B%20puts%20SecureRandom.hex(64)%22).
+
 ### To run the web app
+
+#### Using Notion OAuth
+
+Do not have NOTION_API_KEY in your `config.rb`
+
+Start [ngrok](https://ngrok.com/):
+
+`ngrok http 4567`
+
+Visit you ngrok URL to activate it
+
+Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI to you ngrok URL + `/notion_auth`
 
 `$ ruby app.rb`
 
