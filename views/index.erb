@@ -19,7 +19,7 @@
 
 <p>
   <% if notion_access_token.nil? %>
-    <a href="https://api.notion.com/v1/oauth/authorize?client_id=<%= notion_client_id %>&response_type=code&owner=user&redirect_uri=<%= ngrok_url %>/notion_auth">Log in with Notion</a>
+    <a href="https://api.notion.com/v1/oauth/authorize?client_id=<%= notion_client_id %>&response_type=code&owner=user&redirect_uri=<%= notion_redirect_uri %>/notion_auth">Log in with Notion</a>
   <% elsif @development %>
     We have a Notion access token!
   <% end %>

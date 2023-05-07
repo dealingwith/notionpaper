@@ -1,4 +1,4 @@
-load 'config.rb'
+# load 'config.rb'
 require 'erb'
 require 'pdfkit'
 require 'awesome_print'
@@ -10,6 +10,11 @@ require 'moneta/adapters/file'
 require './notionpaper'
 
 enable :sessions
+
+NOTION_CLIENT_ID = ENV['NOTION_CLIENT_ID']
+NOTION_OAUTH_CLIENT_SECRET = ENV['NOTION_OAUTH_CLIENT_SECRET']
+NOTION_REDIRECT_URI = ENV['NOTION_REDIRECT_URI']
+SESSION_SECRET = ENV['SESSION_SECRET']
 
 def initialize
   super()
@@ -63,22 +68,15 @@ get '/' do
     notion_client_id = nil
   end
 
-  # if NGROK_URL is defined in config.rb
-  if (defined?(NGROK_URL))
-    ngrok_url = NGROK_URL
-  else
-    ngrok_url = nil
-  end
-
   tasks, show_message = get_tasks
 
   erb :index, locals: {
     tasks: tasks,
     show_message: show_message,
     filter_options: @session_data[:filter_options],
-    ngrok_url: ngrok_url,
     notion_client_id: notion_client_id,
-    notion_access_token: notion_access_token
+    notion_access_token: notion_access_token,
+    notion_redirect_uri: NOTION_REDIRECT_URI
   }
 end
 
@@ -96,7 +94,7 @@ get '/notion_auth' do
   end
 
   response = conn.post do |req|
-    req.body = {code: params[:code], grant_type: "authorization_code", redirect_uri: "#{NGROK_URL}/notion_auth"}.to_json
+    req.body = {code: params[:code], grant_type: "authorization_code", redirect_uri: "#{NOTION_REDIRECT_URI}/notion_auth"}.to_json
   end
 
   @session_data[:notion_access_token] = JSON.parse(response.body)['access_token']

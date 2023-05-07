@@ -28,11 +28,16 @@ CONFIG = {
 }
 ```
 
+Un-comment line 1 of `app.rb`
+
 ### To run the web app
 
+`$ ruby app.rb`
+
+Go to `http://127.0.0.1:4567/`
 #### Using Notion OAuth
 
-Do not have NOTION_API_KEY in your `config.rb`
+Do _not_ put NOTION_API_KEY in your `config.rb`
 
 Start [ngrok](https://ngrok.com/):
 
@@ -42,9 +47,12 @@ Visit you ngrok URL to activate it
 
 Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI to you ngrok URL + `/notion_auth`
 
-`$ ruby app.rb`
+##### Required ENV vars for Notion OAuth
 
-Go to `http://127.0.0.1:4567/`
+`NOTION_CLIENT_ID` -- get this from your Notion integration OAuth setup
+`NOTION_OAUTH_CLIENT_SECRET` -- same
+`NOTION_REDIRECT_URI` -- your web app URL, or your ngrok URL (described above)
+`SESSION_SECRET` -- generate a string [as described here](https://sinatrarb.com/intro.html#:~:text=%24%20ruby%20%2De%20%22require%20%27securerandom%27%3B%20puts%20SecureRandom.hex(64)%22)
 
 #### To run with hot-reload
 
