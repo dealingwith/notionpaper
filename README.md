@@ -19,7 +19,6 @@ Add the following to `config.rb`:
 
 ```rb
 NOTION_API_KEY = '[YOUR NOTION API KEY]'
-NOTION_BASE_URL = '[YOUR NOTION BASE URL]' # for example https://www.notion.so/username/
 # optional:
 CONFIG = {
   'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
