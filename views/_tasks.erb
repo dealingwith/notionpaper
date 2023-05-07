@@ -4,7 +4,7 @@
       <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
       <% title&.strip! %>
       <% title = "Untitled" if title.nil? %>
-      <% url = "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}" %>
+      <% url = "#{task.dig('url')}" %>
       <li>
         &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
         <% unless task[:subtasks].nil? %>
@@ -13,7 +13,7 @@
               <% subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text') %>
               <% subtask_title&.strip! %>
               <% subtask_title = "Untitled" if subtask_title.nil? %>
-              <% subtask_url = "#{NOTION_BASE_URL}#{subtask_title.tr(" ", "-")}-#{subtask['id'].tr("-", "")}" %>
+              <% subtask_url = "#{subtask.dig('url')}" %>
               <li>
                 &#9634; <a href="<%= subtask_url %>" target="_blank"><%= subtask_title %></a>
               </li>

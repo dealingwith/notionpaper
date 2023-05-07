@@ -72,10 +72,10 @@ get '/' do
 
   tasks, show_message = get_tasks
 
-  erb :index, locals: { 
-    tasks: tasks, 
-    show_message: show_message, 
-    filter_options: @session_data[:filter_options], 
+  erb :index, locals: {
+    tasks: tasks,
+    show_message: show_message,
+    filter_options: @session_data[:filter_options],
     ngrok_url: ngrok_url,
     notion_client_id: notion_client_id,
     notion_access_token: notion_access_token
@@ -94,16 +94,12 @@ get '/notion_auth' do
     }) do |conn|
     conn.request :authorization, :basic, NOTION_CLIENT_ID, NOTION_OAUTH_CLIENT_SECRET
   end
-  
-  puts params[:code]
+
   response = conn.post do |req|
     req.body = {code: params[:code], grant_type: "authorization_code", redirect_uri: "#{NGROK_URL}/notion_auth"}.to_json
   end
 
   @session_data[:notion_access_token] = JSON.parse(response.body)['access_token']
-
-  puts "Access token:"
-  ap @session_data[:notion_access_token]
 
   redirect '/'
 end
@@ -221,7 +217,7 @@ get '/download_csv' do
       title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
       title&.strip!
       title = 'Untitled' if title.nil? || title == ''
-      csv << [title, "#{NOTION_BASE_URL}#{title.tr(" ", "-")}-#{task['id'].tr("-", "")}"]
+      csv << [title, "#{task.dig('url')}"]
     end
   end
 
