@@ -9,6 +9,7 @@ require 'moneta'
 require 'moneta/adapters/file'
 require './notionpaper'
 
+set :bind, '0.0.0.0'
 enable :sessions
 
 NOTION_CLIENT_ID = ENV['NOTION_CLIENT_ID']
