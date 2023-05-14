@@ -1,6 +1,7 @@
 source "https://rubygems.org"
 
 gem 'awesome_print'
+gem 'puma'
 gem 'sinatra'
 gem 'wkhtmltopdf-binary'
 gem 'pdfkit'
