@@ -10,7 +10,7 @@
 require 'erb'
 require 'pdfkit'
 require './notionpaper'
-require "awesome_print"
+require 'awesome_print'
 load 'config.rb'
 
 def cli_prompt_for_config_values()
@@ -90,8 +90,8 @@ File.write 'notion.taskpaper', taskpaper_content
 File.write 'notion.markdown', markdown_content
 html_content = ERB.new(File.read('views/_tasks.erb')).result(binding)
 File.write 'notion.html', html_content
-begin
-  PDFKit.new(html_content).to_file("notion.pdf")
-rescue Exception
-  puts "PDF generation failed"
-end
+# begin
+#   PDFKit.new(html_content).to_file("notion.pdf")
+# rescue Exception
+#   puts "PDF generation failed"
+# end
