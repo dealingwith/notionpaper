@@ -11,6 +11,8 @@ Very much a WIP.
 
 ## Quickstart
 
+### To run the CLI
+
 `$ bundle`
 
 `$ touch config.rb`
@@ -28,7 +30,11 @@ CONFIG = {
 }
 ```
 
-Un-comment line 1 of `app.rb`
+Un-comment line 1 of `app.rb` -- you can also leave this line commented-out and choose to use your `config.rb` values when prompted.
+
+Run the CLI: `$ ruby run.rb` or `$ bundle exec ruby run.rb`
+
+Observe output in `notion.taskpaper`, `notion.markdown`, and `notion.html`. (PDF output is currently disabled, but feel free to un-comment those lines and give it a shot.)
 
 ### To run the web app
 
@@ -49,10 +55,10 @@ Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI t
 
 ##### Required ENV vars for Notion OAuth
 
-`NOTION_CLIENT_ID` -- get this from your Notion integration OAuth setup
-`NOTION_OAUTH_CLIENT_SECRET` -- same
-`NOTION_REDIRECT_URI` -- your web app URL, or your ngrok URL (described above)
-`SESSION_SECRET` -- generate a string [as described here](https://sinatrarb.com/intro.html#:~:text=%24%20ruby%20%2De%20%22require%20%27securerandom%27%3B%20puts%20SecureRandom.hex(64)%22)
+- `NOTION_CLIENT_ID` -- get this from your Notion integration OAuth setup
+- `NOTION_OAUTH_CLIENT_SECRET`
+- `NOTION_REDIRECT_URI` -- your web app URL, or your ngrok URL (described above)
+- `SESSION_SECRET` -- generate a string [as described here](https://sinatrarb.com/intro.html#:~:text=%24%20ruby%20%2De%20%22require%20%27securerandom%27%3B%20puts%20SecureRandom.hex(64)%22)
 
 #### To run with hot-reload
 
@@ -61,12 +67,6 @@ Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI t
 `$ rerun 'ruby app.rb'`
 
 Go to `http://127.0.0.1:4567/`
-
-### To run the command-line app
-
-`$ ruby run.rb --use-config`
-
-Observe output in `notion.taskpaper`, `notion.markdown`, and `notion.html`.
 
 ### To run the app with dynamic config options
 
@@ -97,9 +97,7 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does t
 
 ## Dependencies
 
-* The Notion API
-  * [docs](https://developers.notion.com/reference/intro)
-  * [developers.notion.com](https://developers.notion.com/)
+* The Notion API. See the [docs](https://developers.notion.com/reference/intro) on [developers.notion.com](https://developers.notion.com/)
 * [notion-ruby-client](https://github.com/orbit-love/notion-ruby-client)
 * [Sinatra](https://sinatrarb.com/)
 * [Moneta](https://github.com/moneta-rb/moneta)
