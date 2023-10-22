@@ -13,9 +13,9 @@ Very much a WIP.
 
 ### To run the CLI
 
-`$ bundle`
+`bundle`
 
-`$ touch config.rb`
+`touch config.rb`
 
 Add the following to `config.rb`:
 
@@ -32,13 +32,13 @@ CONFIG = {
 
 Un-comment line 1 of `app.rb` -- you can also leave this line commented-out and choose to use your `config.rb` values when prompted.
 
-Run the CLI: `$ ruby run.rb` or `$ bundle exec ruby run.rb`
+Run the CLI: `ruby run.rb` or `bundle exec ruby run.rb`
 
 Observe output in `notion.taskpaper`, `notion.markdown`, and `notion.html`. (PDF output is currently disabled, but feel free to un-comment those lines and give it a shot.)
 
 ### To run the web app
 
-`$ ruby app.rb`
+`ruby app.rb`
 
 Go to `http://127.0.0.1:4567/`
 #### Using Notion OAuth
@@ -51,7 +51,7 @@ Start [ngrok](https://ngrok.com/):
 
 Visit you ngrok URL to activate it
 
-Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI to you ngrok URL + `/notion_auth`
+Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI to: your ngrok URL + `/notion_auth`
 
 ##### Required ENV vars for Notion OAuth
 
@@ -62,9 +62,9 @@ Update [your Notion app](https://www.notion.so/my-integrations)'s Redirect URI t
 
 #### To run with hot-reload
 
-`$ gem install rerun`
+`gem install rerun`
 
-`$ rerun 'ruby app.rb'`
+`rerun 'ruby app.rb'`
 
 Go to `http://127.0.0.1:4567/`
 
@@ -72,7 +72,7 @@ Go to `http://127.0.0.1:4567/`
 
 #### Command-line
 
-`$ ruby run.rb`
+`ruby run.rb`
 
 The command-line app will ask if you want to use values in the config or not. If not, it will prompt you for which database, which property to filter by, and which option of that property to filter by.
 
