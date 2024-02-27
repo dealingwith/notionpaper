@@ -164,6 +164,10 @@ def process_subtasks(tasks, config)
   return tasks_no_subtasks
 end
 
+def group_by_project(tasks)
+
+end
+
 def convert_to_markdown(tasks_no_subtasks)
   markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
@@ -191,21 +195,55 @@ end
 def convert_to_taskpaper(tasks_no_subtasks)
   taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
+  # group by project
+  projects = ["Inbox"]
   tasks_no_subtasks.each do |task|
+    projects << task.dig('properties', 'Project', 'select', 'name')
+  end
+
+  projects = projects.uniq().compact().to_h { |project_name| [project_name, ""] }
+
+  # puts "PROJECTS"
+  # ap projects
+
+  tasks_no_subtasks.each do |task|
+    task_content = ""
     title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+    project_name = task.dig('properties', 'Project', 'select', 'name') || "Inbox"
     title&.strip!
     title = "Untitled" if title.nil?
-    taskpaper_content << "- #{title}\n"
+    task_content << "  - #{title}\n"
+    if (task.dig('properties', 'URL', 'url'))
+      task_content << "    #{task.dig('properties', 'URL', 'url')}\n"
+    end
     # create a sub-list of subtasks
     unless task[:subtasks].nil?
       task[:subtasks].each do |subtask|
         subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
         subtask_title&.strip!
         subtask_title = "Untitled" if subtask_title.nil?
-        taskpaper_content << "  - #{subtask_title}\n"
+        task_content << "    - #{subtask_title}\n"
+        if (subtask.dig('properties', 'URL', 'url'))
+          task_content << "      #{subtask.dig('properties', 'URL', 'url')}\n"
+        end
       end
     end
+    # puts project_name
+    # puts projects[project_name]
+    # puts task_content
+    projects[project_name] << task_content
   end
-
+  # puts "PROJECTS WITH DATA"
+  # ap projects
+  projects.each do |project_name, project_task_content|
+    taskpaper_content << "\n# #{project_name}\n"
+    taskpaper_content << project_task_content
+  end
+  # ap taskpaper_content
+  taskpaper_content = taskpaper_content.gsub('’', "'")
   return taskpaper_content
 end
+
+# def clean_quotes(string)
+#   return string.gsub(/[’]/, '’' => ''')
+# end

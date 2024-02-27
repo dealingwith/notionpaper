@@ -82,6 +82,9 @@ end
 # get all tasks
 tasks = get_notion_tasks(config)
 tasks = process_subtasks(tasks, config)
+# tasks = group_by_project(tasks)
+
+ap tasks
 
 taskpaper_content = convert_to_taskpaper(tasks)
 markdown_content = convert_to_markdown(tasks)
