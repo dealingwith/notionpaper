@@ -8,3 +8,5 @@ gem 'pdfkit'
 gem 'faraday'
 gem 'notion-ruby-client'
 gem 'moneta'
+
+gem "rackup", "~> 2.1"

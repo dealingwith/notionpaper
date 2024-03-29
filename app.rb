@@ -1,4 +1,4 @@
-# load 'config.rb'
+load 'config.rb'
 require 'erb'
 require 'pdfkit'
 require 'awesome_print'

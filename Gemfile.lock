@@ -34,6 +34,9 @@ GEM
       rack (>= 3.0.0, < 4)
     rack-session (2.0.0)
       rack (>= 3.0.0)
+    rackup (2.1.0)
+      rack (>= 3)
+      webrick (~> 1.8)
     ruby2_keywords (0.0.5)
     sinatra (4.0.0)
       mustermann (~> 3.0)
@@ -43,6 +46,7 @@ GEM
       tilt (~> 2.0)
     tilt (2.3.0)
     uri (0.13.0)
+    webrick (1.8.1)
     wkhtmltopdf-binary (0.12.6.6)
 
 PLATFORMS
@@ -57,6 +61,7 @@ DEPENDENCIES
   notion-ruby-client
   pdfkit
   puma
+  rackup (~> 2.1)
   sinatra
   wkhtmltopdf-binary
 
