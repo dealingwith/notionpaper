@@ -2,7 +2,7 @@
 
 ## What is it?
 
-It started out as a Notion tasks DB -to- Taskpaper command-line utility (prior art: [dealingwith/trellopaper](https://github.com/dealingwith/trellopaper)). Then we started on a web-app version...which currently simply displays the task list, but aspires to:
+It started out as a Notion tasks DB-to-Taskpaper command-line utility (prior art: [dealingwith/trellopaper](https://github.com/dealingwith/trellopaper)). Then we started on a web-app version...which currently simply displays the task list, but aspires to:
 
 * Print the list beautifully to various paper sizes, ideal for inserting into paper journals and notebooks
 * Support basic entry manipulation (other metadata, completion states)
