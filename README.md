@@ -30,6 +30,16 @@ CONFIG = {
 }
 ```
 
+Additional optional config values--these are not yet asked via the CLI workflow and can only be defined in the config file:
+
+```rb
+"use_output_folder" => true,
+"use_date_folder" => true,
+"taskpaper_output_file" => filename
+"markdown_output_file" => filename
+"html_output_file" => filename
+```
+
 Un-comment line 1 of `app.rb` -- you can also leave this line commented-out and choose to use your `config.rb` values when prompted.
 
 Run the CLI: `ruby run.rb` or `bundle exec ruby run.rb`
