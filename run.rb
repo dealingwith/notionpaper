@@ -11,63 +11,80 @@ require "erb"
 # require "pdfkit"
 require "./notionpaper"
 require "awesome_print"
+require "tty-prompt"
+require "tty-spinner"
 load "config.rb"
 
 def cli_prompt_for_config_values()
-  notionpaper = NotionPaper.new(NOTION_API_KEY)
   # prompt user for all options
-  databases_list = notionpaper.get_notion_databases()
+  prompt = TTY::Prompt.new
+
+  notionpaper = NotionPaper.new(NOTION_API_KEY)
+
+  spinner = TTY::Spinner.new("[:spinner] Loading databases...", format: :dots)
+  spinner.auto_spin # Automatic animation with default interval
 
   # present user with list of databases to choose from
   # see https://developers.notion.com/reference/database
-  puts "** Databases"
-  databases_list.each_with_index { |db, index| puts "#{index}: #{db[:title]}" }
-  print "Enter the number of the database you want to use: "
-  chosen_database = databases_list[gets.chomp.to_i]
+  databases_list = notionpaper.get_notion_databases()
 
-  # present the properties to filter by
-  # see https://developers.notion.com/reference/property-object
-  puts "** Choose a property to filter by"
-  puts "N: No filter"
+  spinner.success("Done!") # Stop animation
+
+  # prompt user to choose a database
+  chosen_database = prompt.select("Select database:", databases_list.map { |db| db[:title] })
+  # get the database from the list
+  chosen_database = databases_list.find { |db| db[:title] == chosen_database }
+  # get the properties of the chosen database
   properties = chosen_database[:filter_properties]
-  properties.each_with_index { |prop, index| puts "#{index}: #{prop[:name]}" }
-  print "Enter the number of the property you want to use: "
-  chosen_filter = gets.chomp
-  if chosen_filter == "N"
-    chosen_filter_property = nil
+  # get the names of the properties
+  filter_choices = properties.map { |prop| prop[:name] }
+  # add a "None" option
+  filter_choices.unshift("None")
+  # prompt user to choose a property to filter by
+  chosen_filter_prop = prompt.select("Select property to filter by:", filter_choices)
+
+  if chosen_filter_prop == "None"
+    chosen_filter_prop = nil
     chosen_filter_options = nil
   else
-    chosen_filter_property = properties[chosen_filter.to_i]
-    # present the options for the chosen property to filter by
-    # see https://developers.notion.com/reference/post-database-query-filter
-    puts "** Choose option(s) for the property to filter by"
-    chosen_filter_property[:options].each_with_index { |option, index| puts "#{index}: #{option["name"]}" }
-    print "Enter the number(s) of the option(s) you want to use (separated by spaces): "
-    chosen_filter_options = gets.split.map { |option_index| chosen_filter_property[:options][option_index.to_i][:name] }
+    # get the property object
+    chosen_filter_prop = properties.find { |prop| prop[:name] == chosen_filter_prop }
+    # get the options of the chosen property
+    filter_options = chosen_filter_prop[:options].map { |option| option["name"] }
+    # prompt user to choose options to filter by
+    chosen_filter_options = prompt.multi_select("Select option(s) to filter by:", filter_options)
   end
-  print "Process subtasks? (y/n): "
-  process_subtasks = gets.chomp.downcase
-  if process_subtasks == "y"
-    print "What is your parent task property name (e.g. 'Parent Task')? "
-    parent_property_name = gets.chomp
+
+  # prompt user to choose whether to process subtasks
+  process_subtasks = prompt.yes?("Process subtasks?")
+
+  if process_subtasks
+    # prompt user for parent property name
+    parent_property_name = prompt.ask("What is your parent task property name (e.g. 'Parent Task')?")
   else
     parent_property_name = nil
   end
+
+  # prompt user to choose whether to use output folder and/or date folder
+  use_output_folder = prompt.yes?("Use output folder?")
+  use_date_folder = prompt.yes?("Use date folder?")
+
   return {
            "db_id" => chosen_database[:id],
-           "chosen_filter_property_name" => chosen_filter_property&.[](:name),
-           "filter_type" => chosen_filter_property&.[](:type),
+           "chosen_filter_property_name" => chosen_filter_prop&.[](:name),
+           "filter_type" => chosen_filter_prop&.[](:type),
            "filter_options" => chosen_filter_options,
            "parent_property_name" => parent_property_name,
+           "use_output_folder" => use_output_folder,
+           "use_date_folder" => use_date_folder,
          }
 end
 
+prompt = TTY::Prompt.new
 if (ARGV[0] && ARGV[0] == "--use-config")
   use_config = true
 else
-  print "Use values in config file? (y/n): "
-  answer = gets.chomp
-  use_config = (answer == "y" || answer == "Y")
+  use_config = prompt.yes?("Use values in config file?")
 end
 
 if (use_config && defined?(CONFIG) && CONFIG)
@@ -78,6 +95,12 @@ else
   end
   config = cli_prompt_for_config_values()
 end
+
+puts "## Config:"
+config.each { |key, value| puts "#{key}: #{value}" }
+
+spinner = TTY::Spinner.new("[:spinner] Loading tasks...", format: :dots)
+spinner.auto_spin # Automatic animation with default interval
 
 # get all tasks
 tasks = get_notion_tasks(config)
@@ -113,6 +136,9 @@ File.write "#{output_folder}/#{markdown_output_file}", markdown_content
 html_output_file = config["html_output_file"] || "notion.html"
 html_content = ERB.new(File.read("views/_tasks.erb")).result(binding)
 File.write "#{output_folder}/#{html_output_file}", html_content
+
+spinner.success("Done!") # Stop animation
+puts "Output files written to #{output_folder}"
 
 # begin
 #   PDFKit.new(html_content).to_file("notion.pdf")
