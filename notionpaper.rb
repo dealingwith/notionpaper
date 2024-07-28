@@ -202,31 +202,38 @@ end
 def group_tasks_by(tasks, config)
   if (config["group_by"])
     grouped_tasks = tasks.group_by do |task|
-      task.dig("properties", config["group_by"], "select", "name")
+      task.dig("properties", config["group_by"], "select", "name") || "Inbox"
     end
   else
+    # TODO don't group if no group_by
+    # this gets around formatting issues later in the chain
     grouped_tasks = { "Notion tasks" => tasks }
   end
   return grouped_tasks
 end
 
-def convert_to_markdown(tasks_no_subtasks)
+def convert_to_markdown(grouped_tasks)
   markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 
-  tasks_no_subtasks.each do |task|
-    title = task.dig("properties", "Name", "title", 0, "plain_text")
-    title&.strip!
-    title = "Untitled" if title.nil?
-    url = "#{task.dig("url")}"
-    markdown_content << "- [ ] [#{title}](#{url})\n"
-    # create a sub-list of subtasks
-    unless task[:subtasks].nil?
-      task[:subtasks].each do |subtask|
-        subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
-        subtask_title&.strip!
-        subtask_title = "Untitled" if subtask_title.nil?
-        subtask_url = "#{subtask.dig("url")}"
-        markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
+  grouped_tasks.each do |group, tasks|
+    markdown_content << "## #{group}\n\n"
+    if (tasks)
+      tasks.each do |task|
+        title = task.dig("properties", "Name", "title", 0, "plain_text")
+        title&.strip!
+        title = "Untitled" if title.nil?
+        url = "#{task.dig("url")}"
+        markdown_content << "- [ ] [#{title}](#{url})\n"
+        # create a sub-list of subtasks
+        unless task[:subtasks].nil?
+          task[:subtasks].each do |subtask|
+            subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
+            subtask_title&.strip!
+            subtask_title = "Untitled" if subtask_title.nil?
+            subtask_url = "#{subtask.dig("url")}"
+            markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
+          end
+        end
       end
     end
   end

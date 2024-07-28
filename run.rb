@@ -115,7 +115,7 @@ File.write "tasks.json", JSON.pretty_generate(tasks)
 # exit()
 
 taskpaper_content = convert_to_taskpaper(tasks)
-# markdown_content = convert_to_markdown(tasks)
+markdown_content = convert_to_markdown(tasks)
 
 # use output and/or date-based folders for output
 output_folder = nil
@@ -138,8 +138,8 @@ end
 taskpaper_output_file = config["taskpaper_output_file"] || "notion.taskpaper"
 File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
 
-# markdown_output_file = config["markdown_output_file"] || "notion.markdown"
-# File.write "#{output_folder}/#{markdown_output_file}", markdown_content
+markdown_output_file = config["markdown_output_file"] || "notion.markdown"
+File.write "#{output_folder}/#{markdown_output_file}", markdown_content
 
 # html_output_file = config["html_output_file"] || "notion.html"
 # html_content = ERB.new(File.read("views/_tasks.erb")).result(binding)
