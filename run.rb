@@ -141,9 +141,9 @@ File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
 File.write "#{output_folder}/#{markdown_output_file}", markdown_content
 
-# html_output_file = config["html_output_file"] || "notion.html"
-# html_content = ERB.new(File.read("views/_tasks.erb")).result(binding)
-# File.write "#{output_folder}/#{html_output_file}", html_content
+html_output_file = config["html_output_file"] || "notion.html"
+html_content = ERB.new(File.read("views/_tasks.erb")).result(binding)
+File.write "#{output_folder}/#{html_output_file}", html_content
 
 spinner.success("Done!") # Stop animation
 puts "Output files written to #{output_folder}"
