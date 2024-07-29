@@ -1,6 +1,5 @@
 require "notion-ruby-client"
 require "awesome_print"
-require "byebug"
 
 class NotionPaper
   attr_reader :databases_results
