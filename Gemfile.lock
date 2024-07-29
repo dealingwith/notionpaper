@@ -3,7 +3,6 @@ GEM
   specs:
     awesome_print (1.9.2)
     base64 (0.2.0)
-    byebug (11.1.3)
     faraday (2.9.0)
       faraday-net_http (>= 2.0, < 3.2)
     faraday-mashify (0.1.1)
@@ -72,7 +71,6 @@ PLATFORMS
 
 DEPENDENCIES
   awesome_print
-  byebug
   faraday
   moneta
   notion-ruby-client
