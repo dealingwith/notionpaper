@@ -12,9 +12,10 @@ databases.rb
 vendor
 db.json
 subtasks.json
-tasks_no_subtasks.json
+tasks_*.json
 tasks.json
 tmp/
 data/
 output/
 output/*
+.byebug_history

@@ -1,5 +1,5 @@
-require 'notion-ruby-client'
-require 'awesome_print'
+require "notion-ruby-client"
+require "awesome_print"
 
 class NotionPaper
   attr_reader :databases_results
@@ -17,24 +17,24 @@ class NotionPaper
     # get all databases this API key has access to
     databases_list = []
     filter_options = []
-    query = {"filter": {"value": "database", "property": "object"}}
+    query = { "filter": { "value": "database", "property": "object" } }
     @notion.search(query) do |db|
-      File.write 'db.json', JSON.pretty_generate(db)
+      # File.write "db.json", JSON.pretty_generate(db)
       db[:results].each do |database|
-        if (database[:title]&.first&.dig('plain_text'))
+        if (database[:title]&.first&.dig("plain_text"))
           db_obj = {
             :id => database[:id],
-            :title => database[:title]&.first&.dig('plain_text'),
-            :filter_properties => []
+            :title => database[:title]&.first&.dig("plain_text"),
+            :filter_properties => [],
           }
           database[:properties].each do |prop|
             filter_prop_options = {
               :name => nil,
               :type => nil,
-              :options => nil
+              :options => nil,
             }
             type = prop[1][:type]
-            if (type == 'select' || type == 'status') # || type == 'checkbox')
+            if (type == "select" || type == "status") # || type == 'checkbox')
               filter_prop_options[:name] = prop[0]
               filter_prop_options[:type] = type
               filter_prop_options[:options] = prop[1][type.to_sym][:options]
@@ -72,10 +72,9 @@ class NotionPaper
     # ap properties
     # @notion.update_page(page_id: notion_page_id, properties: properties)
   end
-
 end
 
-def get_notion_tasks(config=nil, session=nil)
+def get_notion_tasks(config = nil, session = nil)
   if (session&.[](:notion_access_token))
     # it came from Notion OAuth
     notionpaper = NotionPaper.new(session[:notion_access_token])
@@ -88,10 +87,10 @@ def get_notion_tasks(config=nil, session=nil)
 
   if (config)
     # load database and filter configs from passed-in values
-    db_id = config['db_id']
-    chosen_filter_property_name = config['chosen_filter_property_name']
-    filter_type = config['filter_type']
-    filter_options = config['filter_options']
+    db_id = config["db_id"]
+    chosen_filter_property_name = config["chosen_filter_property_name"]
+    filter_type = config["filter_type"]
+    filter_options = config["filter_options"]
   else
     return []
   end
@@ -101,17 +100,17 @@ def get_notion_tasks(config=nil, session=nil)
     filter_options.each { |option|
       subquery << {
         :property => chosen_filter_property_name,
-        filter_type.to_sym => { equals: option }
+        filter_type.to_sym => { equals: option },
       }
     }
     filter = {
-      "or": subquery
+      "or": subquery,
     }
     sorts = [
       {
         "property": chosen_filter_property_name,
-        "direction": "descending"
-      }
+        "direction": "descending",
+      },
     ]
   else
     filter = nil
@@ -120,10 +119,10 @@ def get_notion_tasks(config=nil, session=nil)
 
   results = notionpaper.run_notion_query(db_id, sorts, filter)
 
-  File.write 'results.json', JSON.pretty_generate(results)
+  # File.write "results.json", JSON.pretty_generate(results)
 
   if results
-    tasks = results['results']
+    tasks = results["results"]
   else
     tasks = []
   end
@@ -132,7 +131,7 @@ def get_notion_tasks(config=nil, session=nil)
 end
 
 def process_subtasks(tasks, config)
-  return tasks unless config['parent_property_name']
+  return tasks unless config["parent_property_name"]
 
   subtasks = []
 
@@ -141,7 +140,7 @@ def process_subtasks(tasks, config)
     task
   end
   tasks.each do |task|
-    if (!task.dig('properties', config['parent_property_name'], 'relation')&.length&.zero?)
+    if (!task.dig("properties", config["parent_property_name"], "relation")&.length&.zero?)
       # this is a subtask
       subtasks << task
       tasks_no_subtasks.delete_if { |t| t[:id] == task[:id] }
@@ -155,7 +154,7 @@ def process_subtasks(tasks, config)
   # mutate tasks to add subtasks to parent tasks
   subtasks.each do |subtask|
     tasks_no_subtasks.each do |task|
-      if (task[:id] == subtask.dig('properties', config['parent_property_name'], 'relation', 0, 'id'))
+      if (task[:id] == subtask.dig("properties", config["parent_property_name"], "relation", 0, "id"))
         task[:subtasks] << subtask
       end
     end
@@ -164,22 +163,54 @@ def process_subtasks(tasks, config)
   return tasks_no_subtasks
 end
 
-def convert_to_markdown(tasks_no_subtasks)
-  markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+def group_tasks_by(tasks, config)
+  return tasks unless config["group_by"]
+  return tasks.group_by do |task|
+           task.dig("properties", config["group_by"], "select", "name") || "Inbox"
+         end
+end
 
-  tasks_no_subtasks.each do |task|
-    title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+def convert_grouped_to_markdown(grouped_tasks)
+  markdown_content = ""
+  grouped_tasks.each do |group, tasks|
+    markdown_content << "## #{group}\n\n"
+    if (tasks)
+      markdown_content << convert_to_markdown(tasks)
+    end
+    markdown_content << "\n"
+  end
+
+  return markdown_content
+end
+
+def convert_grouped_to_taskpaper(grouped_tasks)
+  taskpaper_content = ""
+  grouped_tasks.each do |group, tasks|
+    taskpaper_content << "#{group}:\n"
+    if (tasks)
+      taskpaper_content << convert_to_taskpaper(tasks, "  ")
+    end
+    taskpaper_content << "\n"
+  end
+
+  return taskpaper_content
+end
+
+def convert_to_markdown(tasks)
+  markdown_content = ""
+  tasks.each do |task|
+    title = task.dig("properties", "Name", "title", 0, "plain_text")
     title&.strip!
     title = "Untitled" if title.nil?
-    url = "#{task.dig('url')}"
+    url = "#{task.dig("url")}"
     markdown_content << "- [ ] [#{title}](#{url})\n"
     # create a sub-list of subtasks
     unless task[:subtasks].nil?
       task[:subtasks].each do |subtask|
-        subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+        subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
         subtask_title&.strip!
         subtask_title = "Untitled" if subtask_title.nil?
-        subtask_url = "#{subtask.dig('url')}"
+        subtask_url = "#{subtask.dig("url")}"
         markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
       end
     end
@@ -188,18 +219,17 @@ def convert_to_markdown(tasks_no_subtasks)
   return markdown_content
 end
 
-def convert_to_taskpaper(tasks_no_subtasks)
-  taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
-
-  tasks_no_subtasks.each do |task|
-    title = task.dig('properties', 'Name', 'title', 0, 'plain_text')
+def convert_to_taskpaper(tasks, indent = "")
+  taskpaper_content = ""
+  tasks.each do |task|
+    title = task.dig("properties", "Name", "title", 0, "plain_text")
     title&.strip!
     title = "Untitled" if title.nil?
-    taskpaper_content << "- #{title}\n"
+    taskpaper_content << "#{indent}- #{title}\n"
     # create a sub-list of subtasks
     unless task[:subtasks].nil?
       task[:subtasks].each do |subtask|
-        subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text')
+        subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
         subtask_title&.strip!
         subtask_title = "Untitled" if subtask_title.nil?
         taskpaper_content << "  - #{subtask_title}\n"
