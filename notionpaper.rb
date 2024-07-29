@@ -20,7 +20,7 @@ class NotionPaper
     filter_options = []
     query = { "filter": { "value": "database", "property": "object" } }
     @notion.search(query) do |db|
-      File.write "db.json", JSON.pretty_generate(db)
+      # File.write "db.json", JSON.pretty_generate(db)
       db[:results].each do |database|
         if (database[:title]&.first&.dig("plain_text"))
           db_obj = {
@@ -120,7 +120,7 @@ def get_notion_tasks(config = nil, session = nil)
 
   results = notionpaper.run_notion_query(db_id, sorts, filter)
 
-  File.write "results.json", JSON.pretty_generate(results)
+  # File.write "results.json", JSON.pretty_generate(results)
 
   if results
     tasks = results["results"]
@@ -131,72 +131,37 @@ def get_notion_tasks(config = nil, session = nil)
   return tasks
 end
 
-def process_subtasks(grouped_tasks, config)
-  return grouped_tasks unless config["parent_property_name"]
+def process_subtasks(tasks, config)
+  return tasks unless config["parent_property_name"]
 
-  # tasks_returned = Marshal.load(Marshal.dump(grouped_tasks))
+  subtasks = []
 
-  grouped_tasks.each do |group, tasks|
-    puts "Group: #{group}"
-    puts "Tasks: #{tasks.length}"
-
-    File.write "tasks_in_process_subtasks.json", JSON.pretty_generate(tasks)
-
-    subtasks = []
-    tasks.map do |task|
-      # add a subtasks array to each task
-      task[:subtasks] = []
-      begin
-        # check if this task has a parent relation defined
-        if (!task.dig("properties", config["parent_property_name"], "relation")&.length&.zero?)
-          # this is a subtask
-          subtasks << task
-        end
-      rescue => exception
-        puts exception
-        ap task
-      end
+  tasks_no_subtasks = tasks.map do |task|
+    task[:subtasks] = []
+    task
+  end
+  tasks.each do |task|
+    if (!task.dig("properties", config["parent_property_name"], "relation")&.length&.zero?)
+      # this is a subtask
+      subtasks << task
+      tasks_no_subtasks.delete_if { |t| t[:id] == task[:id] }
     end
-    break if subtasks.empty?
+  end
 
-    File.write "tasks_in_process_subtasks_before_reject.json", JSON.pretty_generate(tasks)
+  # File.write 'tasks.json', JSON.pretty_generate(tasks)
+  # File.write 'tasks_no_subtasks.json', JSON.pretty_generate(tasks_no_subtasks)
+  # File.write 'subtasks.json', JSON.pretty_generate(subtasks)
 
-    # remove subtasks from tasks
-    begin
-      tasks.reject! { |task| subtasks.include?(task) }
-    rescue => exception
-      puts exception
-    end
-
-    File.write "tasks_in_process_subtasks_after_reject.json", JSON.pretty_generate(tasks)
-
-    # mutate tasks to add subtasks to parent tasks
-    puts "Subtasks: #{subtasks.length}"
-    # ap subtasks
-    puts "Tasks: #{tasks.length}"
-    subtasks.each do |subtask|
-      ap tasks
-      tasks.map do |task|
-        # ap task
-        # exit()
-        begin
-          if (task[:id] == subtask.dig("properties", config["parent_property_name"], "relation", 0, "id"))
-            task[:subtasks] << subtask
-          end
-        rescue => exception
-          puts "****************** EXCEPTION:"
-          puts exception
-          puts "********** Task:"
-          ap task
-          puts "********** Subtask:"
-          ap subtask
-          # exit()
-        end
+  # mutate tasks to add subtasks to parent tasks
+  subtasks.each do |subtask|
+    tasks_no_subtasks.each do |task|
+      if (task[:id] == subtask.dig("properties", config["parent_property_name"], "relation", 0, "id"))
+        task[:subtasks] << subtask
       end
     end
   end
 
-  return grouped_tasks
+  return tasks_no_subtasks
 end
 
 def group_tasks_by(tasks, config)
@@ -212,28 +177,48 @@ def group_tasks_by(tasks, config)
   return grouped_tasks
 end
 
-def convert_to_markdown(grouped_tasks)
-  markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
-
+def convert_grouped_to_markdown(grouped_tasks)
+  markdown_content = ""
   grouped_tasks.each do |group, tasks|
     markdown_content << "## #{group}\n\n"
     if (tasks)
-      tasks.each do |task|
-        title = task.dig("properties", "Name", "title", 0, "plain_text")
-        title&.strip!
-        title = "Untitled" if title.nil?
-        url = "#{task.dig("url")}"
-        markdown_content << "- [ ] [#{title}](#{url})\n"
-        # create a sub-list of subtasks
-        unless task[:subtasks].nil?
-          task[:subtasks].each do |subtask|
-            subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
-            subtask_title&.strip!
-            subtask_title = "Untitled" if subtask_title.nil?
-            subtask_url = "#{subtask.dig("url")}"
-            markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
-          end
-        end
+      markdown_content << convert_to_markdown(tasks)
+    end
+    markdown_content << "\n"
+  end
+
+  return markdown_content
+end
+
+def convert_grouped_to_taskpaper(grouped_tasks)
+  taskpaper_content = ""
+  grouped_tasks.each do |group, tasks|
+    taskpaper_content << "#{group}:\n"
+    if (tasks)
+      taskpaper_content << convert_to_taskpaper(tasks, "  ")
+    end
+    taskpaper_content << "\n"
+  end
+
+  return taskpaper_content
+end
+
+def convert_to_markdown(tasks)
+  markdown_content = ""
+  tasks.each do |task|
+    title = task.dig("properties", "Name", "title", 0, "plain_text")
+    title&.strip!
+    title = "Untitled" if title.nil?
+    url = "#{task.dig("url")}"
+    markdown_content << "- [ ] [#{title}](#{url})\n"
+    # create a sub-list of subtasks
+    unless task[:subtasks].nil?
+      task[:subtasks].each do |subtask|
+        subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
+        subtask_title&.strip!
+        subtask_title = "Untitled" if subtask_title.nil?
+        subtask_url = "#{subtask.dig("url")}"
+        markdown_content << "  - [ ] [#{subtask_title}](#{subtask_url})\n"
       end
     end
   end
@@ -241,25 +226,20 @@ def convert_to_markdown(grouped_tasks)
   return markdown_content
 end
 
-def convert_to_taskpaper(grouped_tasks)
-  taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
-  grouped_tasks.each do |group, tasks|
-    taskpaper_content << "#{group}:\n"
-    if (tasks)
-      tasks.each do |task|
-        title = task.dig("properties", "Name", "title", 0, "plain_text")
-        title&.strip!
-        title = "Untitled" if title.nil?
-        taskpaper_content << "  - #{title}\n"
-        # create a sub-list of subtasks
-        unless task[:subtasks].nil?
-          task[:subtasks].each do |subtask|
-            subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
-            subtask_title&.strip!
-            subtask_title = "Untitled" if subtask_title.nil?
-            taskpaper_content << "    - #{subtask_title}\n"
-          end
-        end
+def convert_to_taskpaper(tasks, indent = "")
+  taskpaper_content = ""
+  tasks.each do |task|
+    title = task.dig("properties", "Name", "title", 0, "plain_text")
+    title&.strip!
+    title = "Untitled" if title.nil?
+    taskpaper_content << "#{indent}- #{title}\n"
+    # create a sub-list of subtasks
+    unless task[:subtasks].nil?
+      task[:subtasks].each do |subtask|
+        subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
+        subtask_title&.strip!
+        subtask_title = "Untitled" if subtask_title.nil?
+        taskpaper_content << "  - #{subtask_title}\n"
       end
     end
   end

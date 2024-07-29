@@ -104,18 +104,18 @@ spinner.auto_spin # Automatic animation with default interval
 
 # get all tasks
 tasks = get_notion_tasks(config)
-grouped_tasks = group_tasks_by(tasks, config)
-if grouped_tasks
-  File.write "tasks_grouped.json", JSON.pretty_generate(grouped_tasks)
+tasks = process_subtasks(tasks, config)
+tasks = group_tasks_by(tasks, config) if config["group_by"]
+
+taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+if (config["group_by"])
+  taskpaper_content << convert_grouped_to_taskpaper(tasks)
+  markdown_content << convert_grouped_to_markdown(tasks)
+else
+  taskpaper_content << convert_to_taskpaper(tasks)
+  markdown_content << convert_to_markdown(tasks)
 end
-tasks = process_subtasks(grouped_tasks, config)
-
-File.write "tasks.json", JSON.pretty_generate(tasks)
-
-# exit()
-
-taskpaper_content = convert_to_taskpaper(tasks)
-markdown_content = convert_to_markdown(tasks)
 
 # use output and/or date-based folders for output
 output_folder = nil
@@ -142,7 +142,8 @@ markdown_output_file = config["markdown_output_file"] || "notion.markdown"
 File.write "#{output_folder}/#{markdown_output_file}", markdown_content
 
 html_output_file = config["html_output_file"] || "notion.html"
-html_content = ERB.new(File.read("views/_tasks.erb")).result(binding)
+html_template = config["group_by"] ? "_grouped_tasks.erb" : "_tasks.erb"
+html_content = ERB.new(File.read("views/#{html_template}")).result(binding)
 File.write "#{output_folder}/#{html_output_file}", html_content
 
 spinner.success("Done!") # Stop animation

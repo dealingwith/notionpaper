@@ -1,31 +1,28 @@
 <% if tasks %>
-  <% tasks.each do |group, tasks| %>
-    <h2><%= group %></h2>
-    <ul>
-      <% tasks.each do |task| %>
-        <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
-        <% title&.strip! %>
-        <% title = "Untitled" if title.nil? %>
-        <% url = "#{task.dig('url')}" %>
-        <li>
-          &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
-          <% unless task[:subtasks].nil? %>
-            <ul>
-              <% task[:subtasks].each do |subtask| %>
-                <% subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text') %>
-                <% subtask_title&.strip! %>
-                <% subtask_title = "Untitled" if subtask_title.nil? %>
-                <% subtask_url = "#{subtask.dig('url')}" %>
-                <li>
-                  &#9634; <a href="<%= subtask_url %>" target="_blank"><%= subtask_title %></a>
-                </li>
-              <% end %>
-            </ul>
-          <% end %>
-        </li>
-      <% end %>
-    </ul>
-  <% end %>
+  <ul>
+    <% tasks.each do |task| %>
+      <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
+      <% title&.strip! %>
+      <% title = "Untitled" if title.nil? %>
+      <% url = "#{task.dig('url')}" %>
+      <li>
+        &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
+        <% unless task[:subtasks].nil? %>
+          <ul>
+            <% task[:subtasks].each do |subtask| %>
+              <% subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text') %>
+              <% subtask_title&.strip! %>
+              <% subtask_title = "Untitled" if subtask_title.nil? %>
+              <% subtask_url = "#{subtask.dig('url')}" %>
+              <li>
+                &#9634; <a href="<%= subtask_url %>" target="_blank"><%= subtask_title %></a>
+              </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </li>
+    <% end %>
+  </ul>
 <% end %>
 
 <style>
