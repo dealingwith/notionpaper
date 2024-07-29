@@ -164,16 +164,10 @@ def process_subtasks(tasks, config)
 end
 
 def group_tasks_by(tasks, config)
-  if (config["group_by"])
-    grouped_tasks = tasks.group_by do |task|
-      task.dig("properties", config["group_by"], "select", "name") || "Inbox"
-    end
-  else
-    # TODO don't group if no group_by
-    # this gets around formatting issues later in the chain
-    grouped_tasks = { "Notion tasks" => tasks }
-  end
-  return grouped_tasks
+  return tasks unless config["group_by"]
+  return tasks.group_by do |task|
+           task.dig("properties", config["group_by"], "select", "name") || "Inbox"
+         end
 end
 
 def convert_grouped_to_markdown(grouped_tasks)
