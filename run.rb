@@ -109,12 +109,15 @@ tasks = group_tasks_by(tasks, config) if config["group_by"]
 
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
+logseq_content = "- Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n"
 if (config["group_by"])
   taskpaper_content << convert_grouped_to_taskpaper(tasks)
   markdown_content << convert_grouped_to_markdown(tasks)
+  logseq_content << convert_grouped_to_logseq(tasks)
 else
   taskpaper_content << convert_to_taskpaper(tasks)
   markdown_content << convert_to_markdown(tasks)
+  logseq_content << convert_to_logseq(tasks)
 end
 
 # use output and/or date-based folders for output
@@ -137,6 +140,10 @@ end
 # write to files
 taskpaper_output_file = config["taskpaper_output_file"] || "notion.taskpaper"
 File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
+
+# possibly temp: create Logseq markdown file with TODOs
+logseq_output_file = config["logseq_output_file"] || "notion_logseq.md"
+File.write "#{output_folder}/#{logseq_output_file}", logseq_content
 
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
 File.write "#{output_folder}/#{markdown_output_file}", markdown_content

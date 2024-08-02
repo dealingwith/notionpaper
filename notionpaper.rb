@@ -232,10 +232,45 @@ def convert_to_taskpaper(tasks, indent = "")
         subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
         subtask_title&.strip!
         subtask_title = "Untitled" if subtask_title.nil?
-        taskpaper_content << "  - #{subtask_title}\n"
+        taskpaper_content << "#{indent}  - #{subtask_title}\n"
       end
     end
   end
 
   return taskpaper_content
+end
+
+def convert_to_logseq(tasks, indent = "")
+  markdown_content = ""
+  tasks.each do |task|
+    title = task.dig("properties", "Name", "title", 0, "plain_text")
+    title&.strip!
+    title = "Untitled" if title.nil?
+    url = "#{task.dig("url")}"
+    markdown_content << "#{indent}- TODO [#{title}](#{url})\n"
+    # create a sub-list of subtasks
+    unless task[:subtasks].nil?
+      task[:subtasks].each do |subtask|
+        subtask_title = subtask.dig("properties", "Name", "title", 0, "plain_text")
+        subtask_title&.strip!
+        subtask_title = "Untitled" if subtask_title.nil?
+        subtask_url = "#{subtask.dig("url")}"
+        markdown_content << "#{indent}  - TODO [#{subtask_title}](#{subtask_url})\n"
+      end
+    end
+  end
+
+  return markdown_content
+end
+
+def convert_grouped_to_logseq(grouped_tasks)
+  markdown_content = ""
+  grouped_tasks.each do |group, tasks|
+    markdown_content << "- ##{group}\n"
+    if (tasks)
+      markdown_content << convert_to_logseq(tasks, "  ")
+    end
+  end
+
+  return markdown_content
 end
