@@ -20,13 +20,13 @@ Very much a WIP.
 Add the following to `config.rb`:
 
 ```rb
-NOTION_API_KEY = '[YOUR NOTION API KEY]'
+NOTION_API_KEY = "[YOUR NOTION API KEY]"
 # optional:
 CONFIG = {
-  'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
-  'chosen_filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. what you've named the column in Notion, e.g. 'Status'
-  'filter_type' => 'select', # or Notion's new 'status' is supported
-  'filter_options' => ['In Progress', 'Priority'] # what values in that column to filter by, those are examples, could be anything
+  "db_id" => "[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]",
+  "chosen_filter_property_name" => "[TO FILTER, PUT PROPERTY NAME HERE]", # e.g. what you've named the column in Notion, e.g. 'Status'
+  "filter_type" => "select", # or Notion's new 'status' is supported
+  "filter_options" => ["In Progress", "Priority"] # what values in that column to filter by, those are examples, could be anything
 }
 ```
 
@@ -35,9 +35,9 @@ Additional optional config values--these are not yet asked via the CLI workflow 
 ```rb
 "use_output_folder" => true,
 "use_date_folder" => true,
-"taskpaper_output_file" => filename
-"markdown_output_file" => filename
-"html_output_file" => filename
+"taskpaper_output_file" => filename,
+"markdown_output_file" => filename,
+"html_output_file" => filename,
 ```
 
 Un-comment line 1 of `app.rb` -- you can also leave this line commented-out and choose to use your `config.rb` values when prompted.
@@ -47,6 +47,8 @@ Run the CLI: `ruby run.rb` or `bundle exec ruby run.rb`
 Observe output in `notion.taskpaper`, `notion.markdown`, and `notion.html`. (PDF output is currently disabled, but feel free to un-comment those lines and give it a shot.)
 
 ### To run the web app
+
+_Update: this hasn't been tested in a bit and might be pretty broken_
 
 `ruby app.rb`
 
