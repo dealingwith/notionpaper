@@ -196,12 +196,16 @@ def convert_grouped_to_taskpaper(grouped_tasks)
   return taskpaper_content
 end
 
+def convert_title(title_array)
+  title = title_array.map { |t| t["plain_text"].to_s.strip }.reject(&:empty?).join(" ")
+  title = "Untitled" if title.empty?
+  title
+end
+
 def convert_to_markdown(tasks)
   markdown_content = ""
   tasks.each do |task|
-    title = task.dig("properties", "Name", "title", 0, "plain_text")
-    title&.strip!
-    title = "Untitled" if title.nil?
+    title = convert_title(task.dig("properties", "Name", "title"))
     url = "#{task.dig("url")}"
     markdown_content << "- [ ] [#{title}](#{url})\n"
     # create a sub-list of subtasks
@@ -222,9 +226,7 @@ end
 def convert_to_taskpaper(tasks, indent = "")
   taskpaper_content = ""
   tasks.each do |task|
-    title = task.dig("properties", "Name", "title", 0, "plain_text")
-    title&.strip!
-    title = "Untitled" if title.nil?
+    title = convert_title(task.dig("properties", "Name", "title"))
     taskpaper_content << "#{indent}- #{title}\n"
     # create a sub-list of subtasks
     unless task[:subtasks].nil?
@@ -243,9 +245,7 @@ end
 def convert_to_logseq(tasks, indent = "")
   markdown_content = ""
   tasks.each do |task|
-    title = task.dig("properties", "Name", "title", 0, "plain_text")
-    title&.strip!
-    title = "Untitled" if title.nil?
+    title = convert_title(task.dig("properties", "Name", "title"))
     url = "#{task.dig("url")}"
     markdown_content << "#{indent}- TODO [#{title}](#{url})\n"
     # create a sub-list of subtasks
