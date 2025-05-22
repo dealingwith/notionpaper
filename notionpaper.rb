@@ -119,7 +119,7 @@ def get_notion_tasks(config = nil, session = nil)
 
   results = notionpaper.run_notion_query(db_id, sorts, filter)
 
-  # File.write "results.json", JSON.pretty_generate(results)
+  File.write "results.json", JSON.pretty_generate(results)
 
   if results
     tasks = results["results"]
@@ -164,10 +164,11 @@ def process_subtasks(tasks, config)
 end
 
 def group_tasks_by(tasks, config)
-  return tasks unless config["group_by"]
-  return tasks.group_by do |task|
-           task.dig("properties", config["group_by"], "select", "name") || "Inbox"
-         end
+  return tasks unless config["group_by"] && config["group_by_type"]
+  ret_tasks = tasks.group_by do |task|
+    task.dig("properties", config["group_by"], config["group_by_type"], "name") || "Inbox"
+  end
+  return ret_tasks
 end
 
 def convert_grouped_to_markdown(grouped_tasks)

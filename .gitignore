@@ -19,3 +19,4 @@ data/
 output/
 output/*
 .byebug_history
+grouped_tasks.json

@@ -105,12 +105,12 @@ spinner.auto_spin # Automatic animation with default interval
 # get all tasks
 tasks = get_notion_tasks(config)
 tasks = process_subtasks(tasks, config)
-tasks = group_tasks_by(tasks, config) if config["group_by"]
+tasks = group_tasks_by(tasks, config) if config["group_by"] && config["group_by_type"]
 
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 logseq_content = "- Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n"
-if (config["group_by"])
+if (config["group_by"] && config["group_by_type"])
   taskpaper_content << convert_grouped_to_taskpaper(tasks)
   markdown_content << convert_grouped_to_markdown(tasks)
   logseq_content << convert_grouped_to_logseq(tasks)

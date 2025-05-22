@@ -113,3 +113,15 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does t
 * [notion-ruby-client](https://github.com/orbit-love/notion-ruby-client)
 * [Sinatra](https://sinatrarb.com/)
 * [Moneta](https://github.com/moneta-rb/moneta)
+
+## TODO
+
+- Group-by config'd via CLI inputs
+- Display filter property
+- Multiple databases
+- Additional inputs
+  - local file
+  - logseq
+- Mark as done
+- Sort
+- Write new config from command line
