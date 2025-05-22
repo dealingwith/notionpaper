@@ -125,3 +125,4 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does t
 - Mark as done
 - Sort
 - Write new config from command line
+- Nested subtasks
