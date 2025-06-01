@@ -1,0 +1,72 @@
+<% if tasks %>
+  <% tasks.each do |group, tasks| %>
+    <h2><%= group %></h2>
+    <ul>
+      <% tasks.each do |task| %>
+        <% title = task.dig('properties', 'Name', 'title', 0, 'plain_text') %>
+        <% title&.strip! %>
+        <% title = "Untitled" if title.nil? %>
+        <% url = "#{task.dig('url')}" %>
+        <li>
+          &#9634; <a href="<%= url %>" target="_blank"><%= title %></a>
+          <% unless task[:subtasks].nil? %>
+            <ul>
+              <% task[:subtasks].each do |subtask| %>
+                <% subtask_title = subtask.dig('properties', 'Name', 'title', 0, 'plain_text') %>
+                <% subtask_title&.strip! %>
+                <% subtask_title = "Untitled" if subtask_title.nil? %>
+                <% subtask_url = "#{subtask.dig('url')}" %>
+                <li>
+                  &#9634; <a href="<%= subtask_url %>" target="_blank"><%= subtask_title %></a>
+                </li>
+              <% end %>
+            </ul>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>
+
+<style>
+  ul, li {
+    padding: 0;
+    margin: 0;
+  }
+  li:not(:last-child) {
+    border-bottom: 1px solid #e9e9e9;
+    padding-bottom: 10px;
+  }
+  li {
+    padding-top: 10px;
+    list-style: none;
+    margin: 5px;
+  }
+  ul li ul li {
+    margin-left: 20px;
+  }
+  li a {
+    color: #000;
+    margin-left: 5px;
+    text-decoration: none;
+  }
+</style>
+
+<script type="text/javascript">
+
+  function completeTask(task_id) {
+    fetch('/api/complete_task/' + task_id, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/html'
+      }
+    }).then(function(response) {
+      // response is a promise
+      return response.text();
+    }).then(function(my_text) {
+      // text() gave us the text response, which in our case is the HTML to inject
+      document.querySelector(".tasks").innerHTML = my_text;
+    });
+  }
+
+</script>

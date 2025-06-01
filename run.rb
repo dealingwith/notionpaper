@@ -95,26 +95,26 @@ config.each { |key, value| puts "#{key}: #{value}" }
 spinner = TTY::Spinner.new("[:spinner] Loading tasks...", format: :dots)
 spinner.auto_spin # Automatic animation with default interval
 
-# get all tasks
-tasks = get_notion_tasks(config)
-tasks = process_subtasks(tasks, config)
-tasks = group_tasks_by(tasks, config) if config["group_by"] && config["group_by_type"]
-
+notionpaper = NotionPaper.new(NOTION_API_KEY, config)
+tasks = notionpaper.get_notion_tasks
+if config["parent_property_name"]
+  tasks = notionpaper.process_subtasks(tasks)
+end
+if config["group_by"] && config["group_by_type"]
+  tasks = notionpaper.group_tasks_by(tasks)
+end
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 logseq_content = "- Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n"
-
 if (config["group_by"] && config["group_by_type"])
-  taskpaper_content << convert_grouped_to_taskpaper(tasks)
-  markdown_content << convert_grouped_to_markdown(tasks)
-  logseq_content << convert_grouped_to_logseq(tasks)
+  taskpaper_content << notionpaper.convert_grouped_to_taskpaper(tasks)
+  markdown_content << notionpaper.convert_grouped_to_markdown(tasks)
+  logseq_content << notionpaper.convert_grouped_to_logseq(tasks)
 else
-  taskpaper_content << convert_to_taskpaper(tasks)
-  markdown_content << convert_to_markdown(tasks)
-  logseq_content << convert_to_logseq(tasks)
+  taskpaper_content << notionpaper.convert_to_taskpaper(tasks)
+  markdown_content << notionpaper.convert_to_markdown(tasks)
+  logseq_content << notionpaper.convert_to_logseq(tasks)
 end
-
-# use output and/or date-based folders for output
 output_folder = nil
 date_folder = nil
 if config["use_output_folder"]
@@ -130,20 +130,12 @@ if config["use_date_folder"]
   Dir.mkdir(date_folder) unless Dir.exist?(date_folder)
   output_folder = date_folder
 end
-
-# write to files
 taskpaper_output_file = config["taskpaper_output_file"] || "notion.taskpaper"
 File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
-
-# possibly temp: create Logseq markdown file with TODOs
 logseq_output_file = config["logseq_output_file"] || "notion_logseq.md"
 File.write "#{output_folder}/#{logseq_output_file}", logseq_content
-
-# vanilla markdown file
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
 File.write "#{output_folder}/#{markdown_output_file}", markdown_content
-
-# html file
 html_output_file = config["html_output_file"] || "notion.html"
 html_template = config["group_by"] ? "_grouped_tasks.erb" : "_tasks.erb"
 html_content = ERB.new(File.read("views/#{html_template}")).result(binding)
