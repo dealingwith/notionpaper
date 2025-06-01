@@ -1,5 +1,5 @@
 require "notion-ruby-client"
-require "awesome_print"
+# require "awesome_print"
 
 class NotionPaper
   attr_reader :databases_results, :config
@@ -42,19 +42,6 @@ class NotionPaper
       end
     end
     databases_list
-  end
-
-  def run_notion_query(db_id, sorts, filter)
-    begin
-      if (filter.nil?)
-        @notion.database_query(database_id: db_id)
-      else
-        @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
-      end
-    rescue => exception
-      puts exception
-      false
-    end
   end
 
   def get_notion_tasks
@@ -150,12 +137,6 @@ class NotionPaper
     taskpaper_content
   end
 
-  def convert_title(title_array)
-    title = title_array.map { |t| t["plain_text"].to_s.strip }.reject(&:empty?).join(" ")
-    title = "Untitled" if title.empty?
-    title
-  end
-
   def convert_to_markdown(tasks)
     markdown_content = ""
     tasks.each do |task|
@@ -220,5 +201,26 @@ class NotionPaper
       end
     end
     markdown_content
+  end
+
+  private
+
+  def run_notion_query(db_id, sorts, filter)
+    begin
+      if (filter.nil?)
+        @notion.database_query(database_id: db_id)
+      else
+        @notion.database_query(database_id: db_id, sorts: sorts, filter: filter)
+      end
+    rescue => exception
+      puts exception
+      false
+    end
+  end
+
+  def convert_title(title_array)
+    title = title_array.map { |t| t["plain_text"].to_s.strip }.reject(&:empty?).join(" ")
+    title = "Untitled" if title.empty?
+    title
   end
 end
