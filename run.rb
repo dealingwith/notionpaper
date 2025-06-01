@@ -6,7 +6,6 @@ require "erb"
 require File.expand_path("./notionpaper.rb", File.dirname(__FILE__))
 require "tty-prompt"
 require "tty-spinner"
-load File.expand_path("./config.rb", File.dirname(__FILE__))
 
 def cli_prompt_for_config_values()
   # prompt user for all options
@@ -93,6 +92,10 @@ if (ARGV[0] && ARGV[0] == "--use-config")
   use_config = true
 else
   use_config = prompt.yes?("Use values in config file?")
+end
+
+if (use_config)
+  load File.expand_path("./config.rb", File.dirname(__FILE__))
 end
 
 if (use_config && defined?(CONFIG) && CONFIG)
