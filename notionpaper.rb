@@ -59,14 +59,11 @@ class NotionPaper
   end
 
   def get_notion_tasks
-    notionpaper = self
-    config = @config
-    session = @session
-    if config
-      db_id = config["db_id"]
-      chosen_filter_property_name = config["chosen_filter_property_name"]
-      filter_type = config["filter_type"]
-      filter_options = config["filter_options"]
+    if @config
+      db_id = @config["db_id"]
+      chosen_filter_property_name = @config["chosen_filter_property_name"]
+      filter_type = @config["filter_type"]
+      filter_options = @config["filter_options"]
     else
       return []
     end
@@ -91,7 +88,7 @@ class NotionPaper
       filter = nil
       sorts = nil
     end
-    results = notionpaper.run_notion_query(db_id, sorts, filter)
+    results = run_notion_query(db_id, sorts, filter)
     File.write "results.json", JSON.pretty_generate(results)
     if results
       tasks = results["results"]
@@ -102,22 +99,21 @@ class NotionPaper
   end
 
   def process_subtasks(tasks)
-    config = @config
-    return tasks unless config && config["parent_property_name"]
+    return tasks unless @config && @config["parent_property_name"]
     subtasks = []
     tasks_no_subtasks = tasks.map do |task|
       task[:subtasks] = []
       task
     end
     tasks.each do |task|
-      if (!task.dig("properties", config["parent_property_name"], "relation")&.length&.zero?)
+      if (!task.dig("properties", @config["parent_property_name"], "relation")&.length&.zero?)
         subtasks << task
         tasks_no_subtasks.delete_if { |t| t[:id] == task[:id] }
       end
     end
     subtasks.each do |subtask|
       tasks_no_subtasks.each do |task|
-        if (task[:id] == subtask.dig("properties", config["parent_property_name"], "relation", 0, "id"))
+        if (task[:id] == subtask.dig("properties", @config["parent_property_name"], "relation", 0, "id"))
           task[:subtasks] << subtask
         end
       end
@@ -126,10 +122,9 @@ class NotionPaper
   end
 
   def group_tasks_by(tasks)
-    config = @config
-    return tasks unless config && config["group_by"] && config["group_by_type"]
+    return tasks unless @config && @config["group_by"] && @config["group_by_type"]
     tasks.group_by do |task|
-      task.dig("properties", config["group_by"], config["group_by_type"], "name") || "Inbox"
+      task.dig("properties", @config["group_by"], @config["group_by_type"], "name") || "Inbox"
     end
   end
 
