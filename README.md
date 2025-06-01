@@ -67,19 +67,6 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does t
 * The Notion API. See the [docs](https://developers.notion.com/reference/intro) on [developers.notion.com](https://developers.notion.com/)
 * [notion-ruby-client](https://github.com/orbit-love/notion-ruby-client)
 
-## TODO
-
-- Group-by config'd via CLI inputs
-- Display filter property
-- Multiple databases
-- Additional inputs
-  - local file
-  - logseq
-- Mark as done
-- Sort
-- Write new config from command line
-- Nested subtasks
-
 ## Running the CLI from Anywhere
 
 To run the `notionpaper` CLI tool from any directory, add the project directory to your PATH. For example, if your project is located at `/Users/danielmiller/code/notionpaper`, add the following line to your shell profile (e.g., `~/.zshrc` for zsh):
@@ -95,3 +82,17 @@ source ~/.zshrc
 ```
 
 Now you can run `notionpaper` from any directory in your terminal.
+
+## TODO
+
+- ~~Group-by config'd via CLI inputs~~
+- Display filter property
+- Multiple databases
+- Additional inputs
+  - local file
+  - logseq
+- Mark as done
+- Sort
+- Write new config from command line
+- Load local config from a diff directory
+- Nested subtasks
