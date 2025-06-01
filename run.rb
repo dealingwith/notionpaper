@@ -58,6 +58,19 @@ def cli_prompt_for_config_values()
     parent_property_name = nil
   end
 
+  # prompt user to choose a property to group by
+  group_by_choices = properties.map { |prop| prop[:name] }
+  group_by_choices.unshift("None")
+  group_by = prompt.select("Group tasks by property?", group_by_choices)
+  if group_by == "None"
+    group_by = nil
+    group_by_type = nil
+  else
+    # prompt for group_by_type (e.g. select, status, etc.)
+    group_by_prop = properties.find { |prop| prop[:name] == group_by }
+    group_by_type = group_by_prop ? group_by_prop[:type] : nil
+  end
+
   # prompt user to choose whether to use output folder and/or date folder
   use_output_folder = prompt.yes?("Use output folder?")
   use_date_folder = prompt.yes?("Use date folder?")
@@ -68,6 +81,8 @@ def cli_prompt_for_config_values()
            "filter_type" => chosen_filter_prop&.[](:type),
            "filter_options" => chosen_filter_options,
            "parent_property_name" => parent_property_name,
+           "group_by" => group_by,
+           "group_by_type" => group_by_type,
            "use_output_folder" => use_output_folder,
            "use_date_folder" => use_date_folder,
          }
