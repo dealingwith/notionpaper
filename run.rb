@@ -3,10 +3,10 @@
 # require "awesome_print"
 
 require "erb"
-require "./notionpaper"
+require File.expand_path("./notionpaper.rb", File.dirname(__FILE__))
 require "tty-prompt"
 require "tty-spinner"
-load "config.rb"
+load File.expand_path("./config.rb", File.dirname(__FILE__))
 
 def cli_prompt_for_config_values()
   # prompt user for all options
@@ -131,15 +131,15 @@ if config["use_date_folder"]
   output_folder = date_folder
 end
 taskpaper_output_file = config["taskpaper_output_file"] || "notion.taskpaper"
-File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
+File.write "./#{output_folder}/#{taskpaper_output_file}", taskpaper_content
 logseq_output_file = config["logseq_output_file"] || "notion_logseq.md"
-File.write "#{output_folder}/#{logseq_output_file}", logseq_content
+File.write "./#{output_folder}/#{logseq_output_file}", logseq_content
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
-File.write "#{output_folder}/#{markdown_output_file}", markdown_content
+File.write "./#{output_folder}/#{markdown_output_file}", markdown_content
 html_output_file = config["html_output_file"] || "notion.html"
 html_template = config["group_by"] ? "_grouped_tasks.erb" : "_tasks.erb"
-html_content = ERB.new(File.read("views/#{html_template}")).result(binding)
-File.write "#{output_folder}/#{html_output_file}", html_content
+html_content = ERB.new(File.read(File.expand_path("views/#{html_template}", File.dirname(__FILE__)))).result(binding)
+File.write "./#{output_folder}/#{html_output_file}", html_content
 
 spinner.success("Done!") # Stop animation
 puts "Output files written to #{output_folder}"

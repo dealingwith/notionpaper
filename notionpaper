@@ -1,4 +1,4 @@
 #!/usr/bin/env ruby
 
 # This is the CLI entry point for the NotionPaper tool
-require_relative "./run"
+require File.expand_path("../run", __FILE__)

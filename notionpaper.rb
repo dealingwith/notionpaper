@@ -88,7 +88,6 @@ class NotionPaper
       sorts = nil
     end
     results = run_notion_query(db_id, sorts, filter)
-    File.write "results.json", JSON.pretty_generate(results)
     if results
       tasks = results["results"]
     else
