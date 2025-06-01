@@ -79,3 +79,19 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does t
 - Sort
 - Write new config from command line
 - Nested subtasks
+
+## Running the CLI from Anywhere
+
+To run the `notionpaper` CLI tool from any directory, add the project directory to your PATH. For example, if your project is located at `/Users/danielmiller/code/notionpaper`, add the following line to your shell profile (e.g., `~/.zshrc` for zsh):
+
+```sh
+export PATH="$PATH:/Users/danielmiller/code/notionpaper"
+```
+
+After adding this line, reload your shell configuration:
+
+```sh
+source ~/.zshrc
+```
+
+Now you can run `notionpaper` from any directory in your terminal.
