@@ -1,16 +1,9 @@
-# Set these variables in config.rb:
-# NOTION_API_KEY = '[YOUR NOTION API KEY]'
-# CONFIG = {
-#   'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
-#   'chosen_filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. 'Status'
-#   'filter_options' => ['In Progress', 'Priority'] # <-- e.g.
-# }
-# CONFIG = nil # set to nil to use the interactive mode
+# main CLI script to fetch tasks from Notion and convert them to TaskPaper, Markdown, Logseq, and HTML formats.
+
+# require "awesome_print"
 
 require "erb"
-# require "pdfkit"
 require "./notionpaper"
-require "awesome_print"
 require "tty-prompt"
 require "tty-spinner"
 load "config.rb"
@@ -110,6 +103,7 @@ tasks = group_tasks_by(tasks, config) if config["group_by"] && config["group_by_
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 logseq_content = "- Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n"
+
 if (config["group_by"] && config["group_by_type"])
   taskpaper_content << convert_grouped_to_taskpaper(tasks)
   markdown_content << convert_grouped_to_markdown(tasks)
@@ -145,9 +139,11 @@ File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
 logseq_output_file = config["logseq_output_file"] || "notion_logseq.md"
 File.write "#{output_folder}/#{logseq_output_file}", logseq_content
 
+# vanilla markdown file
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
 File.write "#{output_folder}/#{markdown_output_file}", markdown_content
 
+# html file
 html_output_file = config["html_output_file"] || "notion.html"
 html_template = config["group_by"] ? "_grouped_tasks.erb" : "_tasks.erb"
 html_content = ERB.new(File.read("views/#{html_template}")).result(binding)
@@ -155,9 +151,3 @@ File.write "#{output_folder}/#{html_output_file}", html_content
 
 spinner.success("Done!") # Stop animation
 puts "Output files written to #{output_folder}"
-
-# begin
-#   PDFKit.new(html_content).to_file("notion.pdf")
-# rescue Exception
-#   puts "PDF generation failed"
-# end

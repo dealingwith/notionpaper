@@ -1,9 +1,0 @@
-<ul>
-  <% databases_list.each do |database| %>
-    <li>
-      <a href="/config_property?db_id=<%= database[:id] %>">
-        <%= database[:id] %>: <%= database[:title] %>
-      </a>
-    </li>
-  <% end %>
-</ul>

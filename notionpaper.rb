@@ -61,17 +61,17 @@ class NotionPaper
     end
   end
 
-  def complete_task(notion_page_id, filter_property, filter_option, filter_option_data)
-    # TODO
-    # properties = {
-    #   "#{filter_property}": {
-    #     "#{filter_option}": filter_option_data
-    #   }
-    # }
-    # ap "COMPLETE_TASK PROPERTIES:"
-    # ap properties
-    # @notion.update_page(page_id: notion_page_id, properties: properties)
-  end
+  # def complete_task(notion_page_id, filter_property, filter_option, filter_option_data)
+  #   TODO
+  #   properties = {
+  #     "#{filter_property}": {
+  #       "#{filter_option}": filter_option_data
+  #     }
+  #   }
+  #   ap "COMPLETE_TASK PROPERTIES:"
+  #   ap properties
+  #   @notion.update_page(page_id: notion_page_id, properties: properties)
+  # end
 end
 
 def get_notion_tasks(config = nil, session = nil)
