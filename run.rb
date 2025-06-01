@@ -1,19 +1,12 @@
-# Set these variables in config.rb:
-# NOTION_API_KEY = '[YOUR NOTION API KEY]'
-# CONFIG = {
-#   'db_id' => '[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]',
-#   'chosen_filter_property_name' => '[TO FILTER, PUT PROPERTY NAME HERE]', # e.g. 'Status'
-#   'filter_options' => ['In Progress', 'Priority'] # <-- e.g.
-# }
-# CONFIG = nil # set to nil to use the interactive mode
+# main CLI script to fetch tasks from Notion and convert them to TaskPaper, Markdown, Logseq, and HTML formats.
+
+# require "awesome_print"
 
 require "erb"
-# require "pdfkit"
-require "./notionpaper"
-require "awesome_print"
+require File.expand_path("./notionpaper.rb", File.dirname(__FILE__))
 require "tty-prompt"
 require "tty-spinner"
-load "config.rb"
+load File.expand_path("./config.rb", File.dirname(__FILE__))
 
 def cli_prompt_for_config_values()
   # prompt user for all options
@@ -65,6 +58,19 @@ def cli_prompt_for_config_values()
     parent_property_name = nil
   end
 
+  # prompt user to choose a property to group by
+  group_by_choices = properties.map { |prop| prop[:name] }
+  group_by_choices.unshift("None")
+  group_by = prompt.select("Group tasks by property?", group_by_choices)
+  if group_by == "None"
+    group_by = nil
+    group_by_type = nil
+  else
+    # prompt for group_by_type (e.g. select, status, etc.)
+    group_by_prop = properties.find { |prop| prop[:name] == group_by }
+    group_by_type = group_by_prop ? group_by_prop[:type] : nil
+  end
+
   # prompt user to choose whether to use output folder and/or date folder
   use_output_folder = prompt.yes?("Use output folder?")
   use_date_folder = prompt.yes?("Use date folder?")
@@ -75,6 +81,8 @@ def cli_prompt_for_config_values()
            "filter_type" => chosen_filter_prop&.[](:type),
            "filter_options" => chosen_filter_options,
            "parent_property_name" => parent_property_name,
+           "group_by" => group_by,
+           "group_by_type" => group_by_type,
            "use_output_folder" => use_output_folder,
            "use_date_folder" => use_date_folder,
          }
@@ -102,25 +110,26 @@ config.each { |key, value| puts "#{key}: #{value}" }
 spinner = TTY::Spinner.new("[:spinner] Loading tasks...", format: :dots)
 spinner.auto_spin # Automatic animation with default interval
 
-# get all tasks
-tasks = get_notion_tasks(config)
-tasks = process_subtasks(tasks, config)
-tasks = group_tasks_by(tasks, config) if config["group_by"] && config["group_by_type"]
-
+notionpaper = NotionPaper.new(NOTION_API_KEY, config)
+tasks = notionpaper.get_notion_tasks
+if config["parent_property_name"]
+  tasks = notionpaper.process_subtasks(tasks)
+end
+if config["group_by"] && config["group_by_type"]
+  tasks = notionpaper.group_tasks_by(tasks)
+end
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 logseq_content = "- Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n"
 if (config["group_by"] && config["group_by_type"])
-  taskpaper_content << convert_grouped_to_taskpaper(tasks)
-  markdown_content << convert_grouped_to_markdown(tasks)
-  logseq_content << convert_grouped_to_logseq(tasks)
+  taskpaper_content << notionpaper.convert_grouped_to_taskpaper(tasks)
+  markdown_content << notionpaper.convert_grouped_to_markdown(tasks)
+  logseq_content << notionpaper.convert_grouped_to_logseq(tasks)
 else
-  taskpaper_content << convert_to_taskpaper(tasks)
-  markdown_content << convert_to_markdown(tasks)
-  logseq_content << convert_to_logseq(tasks)
+  taskpaper_content << notionpaper.convert_to_taskpaper(tasks)
+  markdown_content << notionpaper.convert_to_markdown(tasks)
+  logseq_content << notionpaper.convert_to_logseq(tasks)
 end
-
-# use output and/or date-based folders for output
 output_folder = nil
 date_folder = nil
 if config["use_output_folder"]
@@ -136,28 +145,16 @@ if config["use_date_folder"]
   Dir.mkdir(date_folder) unless Dir.exist?(date_folder)
   output_folder = date_folder
 end
-
-# write to files
 taskpaper_output_file = config["taskpaper_output_file"] || "notion.taskpaper"
-File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
-
-# possibly temp: create Logseq markdown file with TODOs
+File.write "./#{output_folder}/#{taskpaper_output_file}", taskpaper_content
 logseq_output_file = config["logseq_output_file"] || "notion_logseq.md"
-File.write "#{output_folder}/#{logseq_output_file}", logseq_content
-
+File.write "./#{output_folder}/#{logseq_output_file}", logseq_content
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
-File.write "#{output_folder}/#{markdown_output_file}", markdown_content
-
+File.write "./#{output_folder}/#{markdown_output_file}", markdown_content
 html_output_file = config["html_output_file"] || "notion.html"
 html_template = config["group_by"] ? "_grouped_tasks.erb" : "_tasks.erb"
-html_content = ERB.new(File.read("views/#{html_template}")).result(binding)
-File.write "#{output_folder}/#{html_output_file}", html_content
+html_content = ERB.new(File.read(File.expand_path("views/#{html_template}", File.dirname(__FILE__)))).result(binding)
+File.write "./#{output_folder}/#{html_output_file}", html_content
 
 spinner.success("Done!") # Stop animation
 puts "Output files written to #{output_folder}"
-
-# begin
-#   PDFKit.new(html_content).to_file("notion.pdf")
-# rescue Exception
-#   puts "PDF generation failed"
-# end
