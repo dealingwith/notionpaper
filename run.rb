@@ -88,14 +88,27 @@ def cli_prompt_for_config_values()
 end
 
 prompt = TTY::Prompt.new
-if (ARGV[0] && ARGV[0] == "--use-config")
+
+# Support: notionpaper --config-path <config_file.rb> or notionpaper --use-config
+config_file_path = nil
+use_config = false
+
+if ARGV[0] == "--config-path" && ARGV[1]
+  config_file_path = File.expand_path(ARGV[1], Dir.pwd)
+  use_config = true
+elsif ARGV[0] == "--use-config"
   use_config = true
 else
   use_config = prompt.yes?("Use values in config file?")
 end
 
-if (use_config)
-  load File.expand_path("./config.rb", File.dirname(__FILE__))
+if use_config
+  # Prefer explicit config file path if given
+  if config_file_path && File.exist?(config_file_path)
+    load config_file_path
+  else
+    load File.expand_path("./config.rb", File.dirname(__FILE__))
+  end
 end
 
 if (use_config && defined?(CONFIG) && CONFIG)
