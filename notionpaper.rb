@@ -2,15 +2,14 @@ require "notion-ruby-client"
 require "awesome_print"
 
 class NotionPaper
-  attr_reader :databases_results, :config, :session
+  attr_reader :databases_results, :config
 
-  def initialize(notion_api_key, config = nil, session = nil)
+  def initialize(notion_api_key, config = nil)
     Notion.configure do |config|
       config.token = notion_api_key
     end
     @notion = Notion::Client.new
     @config = config
-    @session = session
   end
 
   def get_notion_databases
