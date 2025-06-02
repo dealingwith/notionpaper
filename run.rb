@@ -1,23 +1,18 @@
 # main CLI script to fetch tasks from Notion and convert them to TaskPaper, Markdown, Logseq, and HTML formats.
 
-# require "awesome_print"
-
-require "erb"
 require File.expand_path("./notionpaper.rb", File.dirname(__FILE__))
 require "tty-prompt"
 require "tty-spinner"
+require "erb"
+# require "awesome_print"
 
-def cli_prompt_for_config_values()
+def cli_prompt_for_config_values(notionpaper)
   # prompt user for all options
   prompt = TTY::Prompt.new
-
-  notionpaper = NotionPaper.new(NOTION_API_KEY)
 
   spinner = TTY::Spinner.new("[:spinner] Loading databases...", format: :dots)
   spinner.auto_spin # Automatic animation with default interval
 
-  # present user with list of databases to choose from
-  # see https://developers.notion.com/reference/database
   databases_list = notionpaper.get_notion_databases()
 
   spinner.success("Done!") # Stop animation
@@ -111,14 +106,26 @@ if use_config
   end
 end
 
+unless defined?(NOTION_API_KEY) # config file takes precedence
+  NOTION_API_KEY = ENV["NOTION_API_KEY"]
+end
+if NOTION_API_KEY.nil? || NOTION_API_KEY.empty?
+  puts "Please set the NOTION_API_KEY environment variable or set in config"
+  exit 1
+end
+
+notionpaper = NotionPaper.new(NOTION_API_KEY)
+
 if (use_config && defined?(CONFIG) && CONFIG)
   config = CONFIG
 else
   if (use_config && (!defined?(CONFIG) || !CONFIG))
     puts "No `CONFIG` found in config file."
   end
-  config = cli_prompt_for_config_values()
+  config = cli_prompt_for_config_values(notionpaper)
 end
+
+notionpaper.set_config(config)
 
 puts "## Config:"
 config.each { |key, value| puts "#{key}: #{value}" }
@@ -126,17 +133,20 @@ config.each { |key, value| puts "#{key}: #{value}" }
 spinner = TTY::Spinner.new("[:spinner] Loading tasks...", format: :dots)
 spinner.auto_spin # Automatic animation with default interval
 
-notionpaper = NotionPaper.new(NOTION_API_KEY, config)
 tasks = notionpaper.get_notion_tasks
+
 if config["parent_property_name"]
   tasks = notionpaper.process_subtasks(tasks)
 end
+
 if config["group_by"] && config["group_by_type"]
   tasks = notionpaper.group_tasks_by(tasks)
 end
+
 taskpaper_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 markdown_content = "Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n\n"
 logseq_content = "- Data fetched on #{Time.now.strftime("%Y-%m-%d %H:%M")}\n"
+
 if (config["group_by"] && config["group_by_type"])
   taskpaper_content << notionpaper.convert_grouped_to_taskpaper(tasks)
   markdown_content << notionpaper.convert_grouped_to_markdown(tasks)
@@ -146,31 +156,33 @@ else
   markdown_content << notionpaper.convert_to_markdown(tasks)
   logseq_content << notionpaper.convert_to_logseq(tasks)
 end
+
 output_folder = nil
 date_folder = nil
 if config["use_output_folder"]
-  output_folder = "output"
+  output_folder = "./output"
   Dir.mkdir(output_folder) unless Dir.exist?(output_folder)
 end
 if config["use_date_folder"]
   if config["use_output_folder"]
     date_folder = "#{output_folder}/#{Time.now.strftime("%Y-%m-%d")}"
   else
-    date_folder = Time.now.strftime("%Y-%m-%d")
+    date_folder = "./#{Time.now.strftime("%Y-%m-%d")}"
   end
   Dir.mkdir(date_folder) unless Dir.exist?(date_folder)
   output_folder = date_folder
 end
+
 taskpaper_output_file = config["taskpaper_output_file"] || "notion.taskpaper"
-File.write "./#{output_folder}/#{taskpaper_output_file}", taskpaper_content
+File.write "#{output_folder}/#{taskpaper_output_file}", taskpaper_content
 logseq_output_file = config["logseq_output_file"] || "notion_logseq.md"
-File.write "./#{output_folder}/#{logseq_output_file}", logseq_content
+File.write "#{output_folder}/#{logseq_output_file}", logseq_content
 markdown_output_file = config["markdown_output_file"] || "notion.markdown"
-File.write "./#{output_folder}/#{markdown_output_file}", markdown_content
+File.write "#{output_folder}/#{markdown_output_file}", markdown_content
 html_output_file = config["html_output_file"] || "notion.html"
 html_template = config["group_by"] ? "_grouped_tasks.erb" : "_tasks.erb"
-html_content = ERB.new(File.read(File.expand_path("views/#{html_template}", File.dirname(__FILE__)))).result(binding)
-File.write "./#{output_folder}/#{html_output_file}", html_content
+html_content = ERB.new(File.read(File.expand_path("./views/#{html_template}", File.dirname(__FILE__)))).result(binding)
+File.write "#{output_folder}/#{html_output_file}", html_content
 
 spinner.success("Done!") # Stop animation
 puts "Output files written to #{output_folder}"

@@ -10,6 +10,11 @@ A Notion tasks DB-to-Taskpaper (etc) command-line utility
 
 You must have a Notion API key. Get one from [Notion developers](https://developers.notion.com/).
 
+- run `bundle`
+- Put your Notion API key in the env var NOTION_API_KEY or declare in `config.rb`
+  - `touch config.rb`
+  - Open and add `NOTION_API_KEY = "[YOUR NOTION API KEY]"`
+
 ### To run the app with dynamic config options
 
 #### Command-line
@@ -23,17 +28,11 @@ The command-line app will ask if you want to use values in the config or not. If
 - Which property to group tasks by (and its type)
 - Whether to use output and/or date folders
 
-### To set up config.rb (optional, for advanced or repeatable use)
-
-`bundle`
-
-`touch config.rb`
+### To set up config.rb (optional)
 
 Add the following to `config.rb`:
 
 ```rb
-NOTION_API_KEY = "[YOUR NOTION API KEY]"
-# optional:
 CONFIG = {
   "db_id" => "[ID OF THE NOTION DATABASE YOU WANT TO ACCESS]", # The Notion database to fetch tasks from
   "chosen_filter_property_name" => "[PROPERTY NAME]", # The property (column) to filter tasks by, e.g. 'Status'
@@ -89,19 +88,19 @@ _Currently only supports filter properties that can do `equals`_, i.e. it does t
 
 ## Running the CLI from Anywhere
 
-To run the `notionpaper` CLI tool from any directory, add the project directory to your PATH. For example, if your project is located at `/Users/danielmiller/code/notionpaper`, add the following line to your shell profile (e.g., `~/.zshrc` for zsh):
+To run the `notionpaper` CLI tool from any directory, add the project directory to your PATH. For example, if your project is located at `/Users/foo/code/notionpaper`, add the following line to your shell profile (e.g., `~/.zshrc` for zsh):
 
 ```sh
 export PATH="$PATH:/Users/danielmiller/code/notionpaper"
 ```
 
-After adding this line, reload your shell configuration:
-
-```sh
-source ~/.zshrc
-```
+After adding this line, reload your shell configuration.
 
 Now you can run `notionpaper` from any directory in your terminal.
+
+You can pass in values from a config file anywhere by using the following parameters:
+
+`notionpaper --config-path <config_file.rb>`
 
 ## TODO
 
