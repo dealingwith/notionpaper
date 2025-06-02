@@ -12,6 +12,10 @@ class NotionPaper
     @config = config
   end
 
+  def set_config(config)
+    @config = config
+  end
+
   def get_notion_databases
     databases_list = []
     query = { "filter": { "value": "database", "property": "object" } }
