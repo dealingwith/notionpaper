@@ -106,11 +106,10 @@ You can pass in values from a config file anywhere by using the following parame
 
 - Display filter property
 - Multiple databases
-- Additional inputs
-  - local file
-  - logseq
+- Additional inputs (local file, logseq)
 - Mark as done
 - Sort
 - Write new config from command line
-- Load local config from a diff directory
+- ~~Load local config from a diff directory~~ [#](https://github.com/dealingwith/notionpaper/pull/68/commits/f8a7c12163b0ef2c447f199c427f29ffa1455916)
 - Nested subtasks
+- ~~'Group-by' config'd via CLI inputs~~ [#](https://github.com/dealingwith/notionpaper/pull/67/commits/4a82536a0d4a48cb1111040719caf96046f7ff02)
