@@ -157,7 +157,7 @@ else
   logseq_content << notionpaper.convert_to_logseq(tasks)
 end
 
-output_folder = nil
+output_folder = "./"
 date_folder = nil
 if config["use_output_folder"]
   output_folder = "./output"
